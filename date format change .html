@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Date Converter</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width:800px; margin:20px; }
+    pre { background:#f5f5f5; padding:10px; border-radius:6px; white-space:pre-wrap; }
+    #errors { color:crimson; }
+  </style>
+</head>
+<body>
+  <h2>Convert dates → Short form (e.g. 5 Jun 2025)</h2>
+
+  <input type="file" id="fileInput" accept=".txt" />
+  <button id="convertBtn">Convert & Download</button>
+
+  <h3>Preview</h3>
+  <pre id="preview">(no preview yet)</pre>
+
+  <h3>Invalid / skipped lines</h3>
+  <pre id="errors">(none)</pre>
+
+<script>
+const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const monthMap = {
+  "JAN":1,"FEB":2,"MAR":3,"APR":4,"MAY":5,"JUN":6,
+  "JUL":7,"AUG":8,"SEP":9,"SEPT":9,"OCT":10,"NOV":11,"DEC":12
+};
+
+function parseDateLine(line) {
+  if (!line) return null;
+  let s = line.replace(/^\uFEFF/, "").trim().replace(/[,;]+$/, "").trim();
+
+  // DD/MM/YY or DD-MM-YY (2 or 4 digit year)
+  let m = s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/);
+  if (m) {
+    const dd = parseInt(m[1], 10);
+    const mm = parseInt(m[2], 10);
+    const yyyy = normalizeYear(m[3]);
+    if (!isValidDayMonth(dd, mm, yyyy)) return null;
+    return `${dd} ${months[mm-1]} ${yyyy}`;
+  }
+
+  // ISO YYYY-MM-DD
+  m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (m) {
+    const yyyy = parseInt(m[1], 10);
+    const mm = parseInt(m[2], 10);
+    const dd = parseInt(m[3], 10);
+    if (!isValidDayMonth(dd, mm, yyyy)) return null;
+    return `${dd} ${months[mm-1]} ${yyyy}`;
+  }
+
+  // DD-MMM-YY or DD-MMM-YYYY (month name)
+  m = s.match(/^(\d{1,2})-([A-Za-z]{3,4})-(\d{2,4})$/);
+  if (m) {
+    const dd = parseInt(m[1], 10);
+    const monTxt = m[2].toUpperCase();
+    const mm = monthMap[monTxt];
+    if (!mm) return null;
+    const yyyy = normalizeYear(m[3]);
+    if (!isValidDayMonth(dd, mm, yyyy)) return null;
+    return `${dd} ${months[mm-1]} ${yyyy}`;
+  }
+
+  return null;
+}
+
+function normalizeYear(yStr) {
+  if (yStr.length === 2) {
+    const y = parseInt(yStr, 10);
+    return (y < 50) ? 2000 + y : 1900 + y;
+  }
+  return parseInt(yStr, 10);
+}
+
+function isValidDayMonth(dd, mm, yyyy) {
+  if (!(mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31)) return false;
+  const mdays = [31, (isLeap(yyyy) ? 29 : 28), 31,30,31,30,31,31,30,31,30,31];
+  return dd <= mdays[mm - 1];
+}
+function isLeap(y) { return (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0); }
+
+document.getElementById('convertBtn').addEventListener('click', () => {
+  const fileInput = document.getElementById('fileInput');
+  if (!fileInput.files.length) {
+    alert('Please select a .txt file containing dates.');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    let text = String(e.target.result).replace(/\r\n/g, '\n').replace(/^\uFEFF/, '');
+    const lines = text.split('\n');
+
+    const converted = [];
+    const invalid = [];
+    for (let rawLine of lines) {
+      const trimmed = rawLine.trim();
+      if (!trimmed) continue;
+      const out = parseDateLine(trimmed);
+      if (out) converted.push(out);
+      else invalid.push(trimmed);
+    }
+
+    document.getElementById('preview').textContent = converted.length ? converted.join('\n') : '(no valid dates found)';
+    document.getElementById('errors').textContent = invalid.length ? invalid.join('\n') : '(none)';
+
+    if (!converted.length) {
+      alert('No valid dates found to download.');
+      return;
+    }
+
+    const blob = new Blob([converted.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'converted_dates.txt';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+  reader.readAsText(fileInput.files[0], 'UTF-8');
+});
+</script>
+</body>
+</html>
