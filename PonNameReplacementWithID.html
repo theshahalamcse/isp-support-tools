@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Text File Data Replacement Tool</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f8f9fa;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+  }
+  h1 {
+    margin-bottom: 10px;
+    color: #007bff;
+  }
+  .container {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 30px;
+    width: 420px;
+    text-align: center;
+  }
+  input[type="file"] {
+    margin: 10px 0;
+    padding: 8px;
+    width: 100%;
+  }
+  .btn-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 15px;
+  }
+  button:hover {
+    background: #0056b3;
+  }
+  #copyBtn {
+    background: #28a745;
+  }
+  #copyBtn:hover {
+    background: #1e7e34;
+  }
+  #result {
+    margin-top: 20px;
+    white-space: pre-wrap;
+    background: #e9f7ef;
+    border: 1px solid #c3e6cb;
+    border-radius: 6px;
+    padding: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    text-align: left;
+  }
+</style>
+</head>
+<body>
+
+<h1>Text Replacement Tool</h1>
+<div class="container">
+  <label>Select Source File (.txt):</label>
+  <input type="file" id="sourceFile" accept=".txt" />
+
+  <label>Select Mapping File (.txt):</label>
+  <input type="file" id="mappingFile" accept=".txt" />
+
+  <div class="btn-group">
+    <button id="processBtn">Replace Data</button>
+    <button id="copyBtn" style="display:none;">Copy Result</button>
+  </div>
+
+  <div id="result"></div>
+</div>
+
+<script>
+const processBtn = document.getElementById("processBtn");
+const copyBtn = document.getElementById("copyBtn");
+const resultDiv = document.getElementById("result");
+
+processBtn.addEventListener("click", async () => {
+  const sourceFile = document.getElementById("sourceFile").files[0];
+  const mappingFile = document.getElementById("mappingFile").files[0];
+
+  if (!sourceFile || !mappingFile) {
+    alert("Please select both source and mapping files.");
+    return;
+  }
+
+  // Read files as text
+  const sourceText = await sourceFile.text();
+  const mappingText = await mappingFile.text();
+
+  // Parse mapping (key=value pairs)
+  const map = {};
+  mappingText.split(/\r?\n/).forEach(line => {
+    if (line.trim() && line.includes('=')) {
+      const [oldValue, newValue] = line.split('=').map(v => v.trim());
+      map[oldValue] = newValue;
+    }
+  });
+
+  // Replace values
+  let updatedText = sourceText;
+  for (const [oldValue, newValue] of Object.entries(map)) {
+    const regex = new RegExp(oldValue, 'g');
+    updatedText = updatedText.replace(regex, newValue);
+  }
+
+  // Display result
+  resultDiv.textContent = updatedText;
+
+  // Show Copy Button
+  copyBtn.style.display = "inline-block";
+});
+
+// Copy button functionality
+copyBtn.addEventListener("click", async () => {
+  const text = resultDiv.textContent;
+  if (!text.trim()) return alert("No text to copy!");
+  try {
+    await navigator.clipboard.writeText(text);
+    copyBtn.textContent = "Copied!";
+    setTimeout(() => copyBtn.textContent = "Copy Result", 1500);
+  } catch (err) {
+    alert("Failed to copy: " + err);
+  }
+});
+</script>
+
+</body>
+</html>
