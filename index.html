@@ -1,36 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <link rel="stylesheet" href="style.css">
-  <title>OLD SOFT DATE FORMAT TO NEW SOFT DATE FORMAT</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width:800px; margin:20px; }
-    pre { background:#bcf5dd; padding:10px; border-radius:6px; white-space:pre-wrap; }
-    button { margin-top:10px; padding:6px 12px; border:none; border-radius:6px; cursor:pointer; background:#0078d7; color:white; }
-    button:hover { background:#7faac9; }
-    #errors { color:crimson; }
-    .top-controls { display:flex; gap:10px; align-items:center; margin-bottom:10px; }
-  </style>
+<meta charset="UTF-8">
+<title>Live Date Converter</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h2 {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  .container {
+    display: flex;
+    gap: 20px;
+    width: 90%;
+    align-items: flex-start;
+  }
+  textarea {
+    width: 45%;
+    height: 300px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+    resize: none;
+  }
+  #inputText {
+    background: #fff7f0;
+  }
+  #outputBox {
+    display: flex;
+    width: 45%;
+    align-items: stretch;
+    gap: 8px;
+  }
+  #outputText {
+    background: #eaf7f1;
+    flex: 1;
+  }
+  #copyBtn {
+    padding: 6px 12px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    height: fit-content;
+    align-self: flex-start;
+  }
+  #copyBtn:hover {
+    background: #0056b3;
+  }
+  pre.invalid {
+    color: crimson;
+    background: #ffeaea;
+    padding: 10px;
+    border-radius: 6px;
+    width: 90%;
+    margin-top: 20px;
+    white-space: pre-wrap;
+  }
+</style>
 </head>
 <body>
-  <h2>
-  <a href="PonNameReplacementWithID.html" style="text-decoration: none; color:black;">
-    POP NAME Replacement With ID (EX: SHK-PACHDONA = 505) Click to use it.
-  </a>
-  <h2>Convert Dates → Short Form (e.g. 5 Jun 2025)</h2>
 
-  <div class="top-controls">
-    <input type="file" id="fileInput" accept=".txt" />
-    <button id="convertBtn">Convert</button>
-    <button id="copyBtn" style="display:none;">Copy Converted Dates</button>
+<h2>Live Date Converter (Paste Left → Converts Right)</h2>
+
+<div class="container">
+  <textarea id="inputText" placeholder="Paste your dates here (one per line)..."></textarea>
+
+  <div id="outputBox">
+    <textarea id="outputText" placeholder="Converted results appear here..." readonly></textarea>
+    <button id="copyBtn">Copy</button>
   </div>
+</div>
 
-  <h3>Converted Output</h3>
-  <pre id="preview">(no data yet)</pre>
-
-  <h3>Invalid / Skipped Lines</h3>
-  <pre id="errors">(none)</pre>
+<pre id="invalid" class="invalid">(none)</pre>
 
 <script>
 const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -51,24 +101,20 @@ const monthMap = {
 
 function parseDateLine(line) {
   if (!line) return null;
-  let s = line.replace(/^\uFEFF/, "").trim().replace(/[,;]+$/, "").trim();
+  const s = line.trim();
 
   // DD/MM/YY or DD-MM-YY
   let m = s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/);
   if (m) {
-    const dd = parseInt(m[1], 10);
-    const mm = parseInt(m[2], 10);
-    const yyyy = normalizeYear(m[3]);
+    const dd = parseInt(m[1]), mm = parseInt(m[2]), yyyy = normalizeYear(m[3]);
     if (!isValidDayMonth(dd, mm, yyyy)) return null;
     return `${dd} ${months[mm-1]} ${yyyy}`;
   }
 
-  // ISO YYYY-MM-DD
+  // YYYY-MM-DD
   m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
   if (m) {
-    const yyyy = parseInt(m[1], 10);
-    const mm = parseInt(m[2], 10);
-    const dd = parseInt(m[3], 10);
+    const yyyy = parseInt(m[1]), mm = parseInt(m[2]), dd = parseInt(m[3]);
     if (!isValidDayMonth(dd, mm, yyyy)) return null;
     return `${dd} ${months[mm-1]} ${yyyy}`;
   }
@@ -76,7 +122,7 @@ function parseDateLine(line) {
   // DD-MMM-YY / DD-MMM-YYYY / DD-MMMM-YY / DD-MMMM-YYYY
   m = s.match(/^(\d{1,2})-([A-Za-z]{3,9})-(\d{2,4})$/);
   if (m) {
-    const dd = parseInt(m[1], 10);
+    const dd = parseInt(m[1]);
     const monTxt = m[2].toUpperCase();
     const mm = monthMap[monTxt];
     if (!mm) return null;
@@ -91,7 +137,7 @@ function parseDateLine(line) {
 function normalizeYear(yStr) {
   if (yStr.length === 2) {
     const y = parseInt(yStr, 10);
-    return (y < 50) ? 2000 + y : 1900 + y;
+    return (y < 50 ? 2000 + y : 1900 + y);
   }
   return parseInt(yStr, 10);
 }
@@ -103,47 +149,33 @@ function isValidDayMonth(dd, mm, yyyy) {
 }
 function isLeap(y) { return (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0); }
 
-document.getElementById('convertBtn').addEventListener('click', () => {
-  const fileInput = document.getElementById('fileInput');
-  if (!fileInput.files.length) {
-    alert('Please select a .txt file containing dates.');
-    return;
-  }
+document.getElementById("inputText").addEventListener("input", () => {
+  const input = document.getElementById("inputText").value;
+  const lines = input.split(/\r?\n/);
+  const converted = [];
+  const invalid = [];
 
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    let text = String(e.target.result).replace(/\r\n/g, '\n').replace(/^\uFEFF/, '');
-    const lines = text.split('\n');
+  lines.forEach(line => {
+    const result = parseDateLine(line);
+    if (result) converted.push(result);
+    else if (line.trim() !== "") invalid.push(line);
+  });
 
-    const converted = [];
-    const invalid = [];
-    for (let rawLine of lines) {
-      const trimmed = rawLine.trim();
-      if (!trimmed) continue;
-      const out = parseDateLine(trimmed);
-      if (out) converted.push(out);
-      else invalid.push(trimmed);
-    }
-
-    const preview = document.getElementById('preview');
-    const errors = document.getElementById('errors');
-    const copyBtn = document.getElementById('copyBtn');
-
-    preview.textContent = converted.length ? converted.join('\n') : '(no valid dates found)';
-    errors.textContent = invalid.length ? invalid.join('\n') : '(none)';
-    copyBtn.style.display = converted.length ? 'inline-block' : 'none';
-  };
-  reader.readAsText(fileInput.files[0], 'UTF-8');
+  document.getElementById("outputText").value = converted.join("\n");
+  document.getElementById("invalid").textContent = invalid.length ? invalid.join("\n") : "(none)";
 });
 
-document.getElementById('copyBtn').addEventListener('click', () => {
-  const text = document.getElementById('preview').textContent;
+document.getElementById("copyBtn").addEventListener("click", () => {
+  const text = document.getElementById("outputText").value;
+  if (!text.trim()) {
+    alert("No converted text to copy!");
+    return;
+  }
   navigator.clipboard.writeText(text).then(() => {
-    const btn = document.getElementById('copyBtn');
-    btn.textContent = '✅ Copied!';
-    setTimeout(() => btn.textContent = 'Copy Converted Dates', 2000);
+    alert("Converted text copied to clipboard!");
   });
 });
 </script>
+
 </body>
 </html>
