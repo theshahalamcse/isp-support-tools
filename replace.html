@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PON Name Replacement With ID (Live)</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    padding: 20px;
+  }
+  h2 {
+    text-align: center;
+    color: #333;
+  }
+  .container {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  textarea {
+    width: 100%;
+    height: 350px;
+    resize: none;
+    font-family: monospace;
+    font-size: 14px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  button.copy-btn, button.unique-btn {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  button.copy-btn:hover, button.unique-btn:hover {
+    background: #0056b3;
+  }
+  .unique-btn {
+    right: auto;
+    left: 10px;
+    background: #28a745;
+  }
+  .unique-btn:hover {
+    background: #1e7e34;
+  }
+  label {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+</style>
+</head>
+<body>
+
+<h2>🔁 PON Name Replacement With ID (Live)</h2>
+
+<div class="container">
+  <div class="box">
+    <label>Input (PON Names)</label>
+    <button class="unique-btn" onclick="findUnique()">Unique</button>
+    <textarea id="inputText" placeholder="Example:
+PON-A
+PON-B
+PON-A
+PON-C"></textarea>
+  </div>
+
+  <div class="box">
+    <label>Mapping (Name=ID)</label>
+    <textarea id="mappingText" placeholder="Example:
+PON-A=101
+PON-B=102
+PON-C=103"></textarea>
+  </div>
+
+  <div class="box">
+    <label>Output (Converted IDs)</label>
+    <button class="copy-btn" onclick="copyOutput()">Copy</button>
+    <textarea id="outputText" placeholder="Result will appear here..." readonly></textarea>
+  </div>
+</div>
+
+<script>
+function convertText() {
+  const input = document.getElementById('inputText').value.trim().split(/\r?\n/);
+  const mappingLines = document.getElementById('mappingText').value.trim().split(/\r?\n/);
+  const outputBox = document.getElementById('outputText');
+
+  // Build mapping dictionary
+  const map = {};
+  mappingLines.forEach(line => {
+    const [key, val] = line.split('=');
+    if (key && val) map[key.trim()] = val.trim();
+  });
+
+  // Replace names with IDs
+  const output = input.map(line => map[line.trim()] || line).join('\n');
+  outputBox.value = output;
+}
+
+// Find unique PON names only
+function findUnique() {
+  const inputBox = document.getElementById('inputText');
+  const lines = inputBox.value.trim().split(/\r?\n/).filter(Boolean);
+  const uniqueLines = [...new Set(lines)];
+  inputBox.value = uniqueLines.join('\n');
+  convertText(); // Refresh output instantly
+  alert('✅ Duplicates removed — only unique PON names kept!');
+}
+
+// Copy output
+function copyOutput() {
+  const output = document.getElementById('outputText');
+  output.select();
+  document.execCommand('copy');
+  alert('✅ Output copied to clipboard!');
+}
+
+// Live update
+document.getElementById('inputText').addEventListener('input', convertText);
+document.getElementById('mappingText').addEventListener('input', convertText);
+</script>
+
+</body>
+</html>
