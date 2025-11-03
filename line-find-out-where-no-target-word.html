@@ -1,56 +1,142 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Line Filter (Exclude Words)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Line Filter (Exclude Words Live)</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 0; padding: 16px; background: #f8f9fa; }
-  h2 { text-align: center; margin-bottom: 12px; }
-  .container { display: flex; flex-wrap: wrap; gap: 12px; }
-  .box { flex: 1 1 320px; display: flex; flex-direction: column; }
-  label { font-weight: bold; margin-bottom: 6px; }
-  textarea {
-    width: 100%; min-height: 300px; padding: 10px;
-    font-family: monospace; font-size: 14px;
-    resize: vertical; border-radius: 8px; border: 1px solid #ccc;
+  :root {
+    --bg: #f7f8fa;
+    --card-bg: #fff;
+    --border: #d0d7de;
+    --radius: 10px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.06);
+    --text: #222;
   }
+
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 20px;
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+
+  .container {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .box {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    flex: 1 1 320px;
+    min-width: 280px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  label {
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 260px;
+    padding: 10px;
+    resize: vertical;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-family: monospace;
+    font-size: 14px;
+    background: #fafafa;
+    transition: all 0.2s ease;
+  }
+
+  textarea:focus {
+    background: #fff;
+    outline: none;
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 2px rgba(13,110,253,0.2);
+  }
+
+  button {
+    margin-top: 8px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: #0d6efd;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  button:hover {
+    background: #0b5ed7;
+  }
+
   .toast {
-    position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
-    background: #222; color: white; padding: 8px 14px; border-radius: 8px;
-    opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+    position: fixed;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #222;
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 8px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
     z-index: 999;
   }
-  .toast.show { opacity: 1; }
-  button {
-    margin-top: 8px; padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc;
-    cursor: pointer; background: white;
+
+  .toast.show {
+    opacity: 1;
+  }
+
+  @media (max-width: 768px) {
+    h2 { font-size: 18px; }
+    textarea { min-height: 200px; font-size: 13px; }
+    button { padding: 8px 10px; font-size: 13px; }
   }
 </style>
 </head>
 <body>
 
-<h2>Show Lines That Do <u>Not</u> Contain Words</h2>
+<h2>Live Line Filter — Show Lines Without Certain Words</h2>
 
 <div class="toast" id="toast">Copied!</div>
 
 <div class="container">
   <div class="box">
     <label>Input Text</label>
-    <textarea id="inputText" placeholder="Enter your main text...">apple is red
+    <textarea id="inputText" placeholder="Enter your main text here...">apple is red
 banana is yellow
 orange is juicy
 apple pie is sweet</textarea>
   </div>
 
   <div class="box">
-    <label>Exclude Words (one per line)</label>
-    <textarea id="excludeWords" placeholder="Write words to exclude...">apple
+    <label>Words to Exclude (one per line)</label>
+    <textarea id="excludeWords" placeholder="Enter words to remove lines...">apple
 sweet</textarea>
   </div>
 
   <div class="box">
-    <label>Output (lines without excluded words)</label>
+    <label>Output (filtered result)</label>
     <textarea id="outputText" readonly></textarea>
     <button id="copyBtn">Copy Output</button>
   </div>
@@ -75,23 +161,23 @@ function filterLines() {
   const excludeWords = excludeEl.value.split(/\r?\n/).map(w => w.trim()).filter(Boolean);
 
   const result = lines.filter(line => {
-    return !excludeWords.some(word => line.includes(word));
+    return !excludeWords.some(word =>
+      line.toLowerCase().includes(word.toLowerCase())
+    );
   }).join('\n');
 
   outputEl.value = result;
 }
 
-// live update
 inputEl.addEventListener('input', filterLines);
 excludeEl.addEventListener('input', filterLines);
 
-// copy button
 copyBtn.addEventListener('click', async () => {
   await navigator.clipboard.writeText(outputEl.value);
-  showToast();
+  showToast('Copied to clipboard');
 });
 
-filterLines(); // initial run
+filterLines();
 </script>
 
 </body>
