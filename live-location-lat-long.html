@@ -1,74 +1,165 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Live Lat-Long</title>
-  <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;margin:0;padding:20px;background:#f7f7fb;color:#111}
-    .card{width:100%;max-width:420px;margin:20px auto;padding:18px;border-radius:10px;background:#fff;box-shadow:0 6px 18px rgba(16,24,40,.08);}
-    input{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:16px;margin-top:10px}
-    button{margin-top:12px;width:100%;appearance:none;border:0;padding:12px;border-radius:8px;background:#111;color:#fff;font-size:16px;cursor:pointer}
-    button:disabled{opacity:.5;cursor:not-allowed}
-    small{color:#777}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Live Lat-Long</title>
+<style>
+  /* General Styles */
+  body {
+    font-family: system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;
+    margin:0; padding:20px;
+    background:#f7f7fb;
+    color:#111;
+    display:flex; justify-content:center; align-items:center; min-height:100vh;
+  }
+
+  /* Card Styles */
+  .card {
+    width:90%; max-width:420px;
+    padding:20px;
+    border-radius:12px;
+    background:#fff;
+    box-shadow:0 6px 18px rgba(16,24,40,.08);
+    text-align:center;
+    transition: all 0.3s;
+  }
+
+  /* Input Styles */
+  input {
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
+    margin-top:10px;
+    text-align:center;
+    box-sizing:border-box;
+  }
+
+  /* Button Styles */
+  button {
+    margin-top:15px;
+    width:100%;
+    border:0;
+    padding:12px;
+    border-radius:8px;
+    background:#111;
+    color:#fff;
+    font-size:16px;
+    cursor:pointer;
+    transition: all 0.3s;
+  }
+
+  button:hover:not(:disabled) {
+    background:#333;
+  }
+
+  button:disabled {
+    opacity:.5;
+    cursor:not-allowed;
+  }
+
+  /* Green state when copied */
+  button.copied {
+    background: #28a745; /* green */
+    color: #fff;
+  }
+
+  /* Small text */
+  small {
+    color:#777;
+    display:block;
+    margin-top:8px;
+  }
+
+  /* Status message */
+  #status {
+    color:#b21;
+    display:none;
+    margin-top:6px;
+    transition: opacity 0.3s;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 480px) {
+    .card {
+      padding:15px;
+    }
+    input, button {
+      font-size:14px;
+      padding:10px;
+    }
+  }
+</style>
 </head>
 <body>
   <div class="card">
-    <h2>Live Latitude, Longitude</h2>
+    <h2>Live Latitude & Longitude</h2>
     <input id="linkField" readonly placeholder="Waiting for location..." />
     <button id="copyBtn">Copy lat,long</button>
-    <p style="margin-top:12px"><small>Allow location access. Works on HTTPS or localhost.</small></p>
-    <p id="status" style="color:#b21;display:none;margin-top:6px"></p>
+    <small>Allow location access. Works on HTTPS or localhost.</small>
+    <p id="status"></p>
   </div>
 
-  <script>
-    const linkField = document.getElementById('linkField');
-    const copyBtn = document.getElementById('copyBtn');
-    const statusEl = document.getElementById('status');
+<script>
+  const linkField = document.getElementById('linkField');
+  const copyBtn = document.getElementById('copyBtn');
+  const statusEl = document.getElementById('status');
+  let latest = { lat: null, lng: null };
 
-    let latest = { lat: null, lng: null };
+  function showError(message){
+    statusEl.textContent = message;
+    statusEl.style.display = 'block';
+    statusEl.style.opacity = 1;
+    setTimeout(()=> statusEl.style.opacity = 0, 3000);
+  }
 
-    function showError(message){
-      statusEl.textContent = message;
-      statusEl.style.display = 'block';
-    }
-    function hideError(){
-      statusEl.style.display = 'none';
-      statusEl.textContent = '';
-    }
+  function updateField(lat, lng){
+    linkField.value = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+  }
 
-    function updatePosition(pos){
-      hideError();
-      const { latitude, longitude } = pos.coords;
-      latest.lat = latitude;
-      latest.lng = longitude;
-      linkField.value = `${latitude.toFixed(6)},${longitude.toFixed(6)}`;
-    }
+  function updatePosition(pos){
+    const { latitude, longitude } = pos.coords;
+    latest.lat = latitude;
+    latest.lng = longitude;
+    updateField(latitude, longitude);
+    statusEl.style.display = 'none';
+  }
 
-    function handleError(err){
-      switch(err.code){
-        case 1: showError('Permission denied.'); break;
-        case 2: showError('Position unavailable.'); break;
-        case 3: showError('Request timed out.'); break;
-        default: showError('Error: ' + err.message);
-      }
-    }
+  function handleError(err){
+    const messages = {
+      1: 'Permission denied. Please allow location.',
+      2: 'Location unavailable. Move to open sky.',
+      3: 'Timed out. Retrying...'
+    };
+    showError(messages[err.code] || ('Error: ' + err.message));
+  }
 
+  if ('geolocation' in navigator) {
     navigator.geolocation.watchPosition(updatePosition, handleError, {
       enableHighAccuracy: true,
       maximumAge: 0,
       timeout: 20000
     });
+  } else {
+    showError('Your device does not support GPS location.');
+  }
 
-    copyBtn.addEventListener('click', async ()=>{
-      if(latest.lat == null){ showError('Location not ready yet.'); return; }
-      try{
-        await navigator.clipboard.writeText(linkField.value);
-        copyBtn.textContent = 'Copied!';
-        setTimeout(()=> copyBtn.textContent = 'Copy lat,long', 1500);
-      }catch(e){ showError('Copy failed.'); }
-    });
-  </script>
+  copyBtn.addEventListener('click', async () => {
+    if (latest.lat == null) { showError('Location not ready yet.'); return; }
+    try {
+      await navigator.clipboard.writeText(linkField.value);
+      copyBtn.textContent = 'Copied!';
+      copyBtn.classList.add('copied'); // turn green
+      setTimeout(() => {
+        copyBtn.textContent = 'Copy lat,long';
+        copyBtn.classList.remove('copied');
+      }, 1500);
+    } catch(e) {
+      showError('Copy failed.');
+    }
+  });
+</script>
 </body>
 </html>
