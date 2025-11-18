@@ -98,7 +98,7 @@
     <h2>Live Latitude & Longitude</h2>
     <input id="linkField" readonly placeholder="Waiting for location..." />
     <button id="copyBtn">Copy lat,long</button>
-    <small>Allow location access. Works on HTTPS or localhost.</small>
+    <small>Allow location access</small>
     <p id="status"></p>
   </div>
 
@@ -155,7 +155,7 @@
       setTimeout(() => {
         copyBtn.textContent = 'Copy lat,long';
         copyBtn.classList.remove('copied');
-      }, 1500);
+      }, 3000);
     } catch(e) {
       showError('Copy failed.');
     }
