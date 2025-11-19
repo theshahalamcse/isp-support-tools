@@ -18,7 +18,7 @@
   /* Refresh button */
   .refresh-btn {
     padding:10px 18px;
-    background:#28a745;
+    background:#000000;
     color:#fff;
     font-size:16px;
     border:none;
@@ -27,10 +27,7 @@
     margin-bottom:15px;
     transition:0.3s;
   }
-  .refresh-btn:hover {
-    background:#0b5ed7;
-  }
-
+  
   .card {
     width:90%; max-width:420px;
     padding:20px;
@@ -93,8 +90,7 @@
 <body>
 
   <!-- Refresh button -->
-  <button class="refresh-btn" onclick="location.reload()">🔄 Refresh</button>
-
+  <button class="refresh-btn" onclick="flashAndRefresh()">🔄 Refresh</button>
   <div class="card">
     <h2>Live Latitude & Longitude</h2>
     <input id="linkField" readonly placeholder="Waiting for location..." />
@@ -161,6 +157,17 @@
       showError('Copy failed.');
     }
   });
+  function flashAndRefresh() {
+  const btn = document.querySelector('.refresh-btn');
+
+  // Flash color
+  btn.style.background = "#28a745";
+
+  // Let browser repaint before reload
+  setTimeout(() => {
+    location.reload();
+  }, 200); // flash visible for ~120ms
+}
 </script>
 </body>
 </html>
