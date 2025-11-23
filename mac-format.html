@@ -5,16 +5,95 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MAC / ONU Formatter</title>
 <style>
-  body { font-family: Arial, sans-serif; background:#f2f2f7; padding:20px; }
-  .card { background:white; padding:20px; border-radius:12px; max-width:480px; margin:auto; box-shadow:0 3px 8px rgba(0,0,0,0.1); }
-  input { width:100%; padding:12px; margin:8px 0; border-radius:8px; border:1px solid #ccc; font-size:16px; }
-  .row { display:flex; justify-content:space-between; align-items:center; margin-top:10px; }
+body { 
+    font-family: Arial, sans-serif; 
+    background:#f2f2f7; 
+    padding:20px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+  }
+  .card {
+     background:rgb(229, 244, 248);
+     padding:30px; 
+     border-radius:12px; 
+     width:100%;
+     max-width:480px; 
+     box-shadow:0 3px 8px rgba(80, 78, 78, 0.1); 
+  }
+ input { 
+    width: 100%;
+    max-width: 100%;
+    height: 45px;
+    margin-top: 10px;
+    padding: 0 12px;
+    border-radius: 12px; 
+    border: 1px solid #ccc; 
+    font-size: 16px; 
+    text-align: center;
+    color: black;
+    box-sizing: border-box;
+  }
+
+  @media(max-width: 600px) {
+    input {
+      height: 40px;
+      font-size: 16px;
+    }
+  }
+
+  @media(max-width: 480px) {
+    input {
+      height: 38px;
+      max-width: 100%;
+      font-size: 14px;
+    }
+  }
+  .row { display:flex; justify-content:space-between; align-items:center; margin-top:10px; text-align: center; }
+  .row button { padding:6px 10px; border:none; border-radius:6px; cursor:pointer; font-size:14px; }
+  .button { background:transparent; color:#111; border:1px solid rgba(0,0,0,0.08); }
+  .row.format-pairDot  {
+    background-color: #92e7e7; 
+    border-left:6px solid #20c997; 
+    border-radius:12px; 
+    border:1px solid #ccc;
+ }
+  .row.format-pairColon{
+    background-color: #92e7e7; 
+    border-left:6px solid #28a745;    
+     border-radius:12px; 
+    border:1px solid #ccc;
+ }
+  .row.format-pairHyph {
+    background-color: #92e7e7; 
+    border-left:6px 
+    solid #1e90ff;    
+     border-radius:12px; 
+    border:1px solid #ccc; 
+}
+  .row.format-quadDot  {background-color: #92e7e7; border-left:6px solid #ffb84d;     border-radius:12px; 
+    border:1px solid #ccc; }
+  .row.format-quadHyph {background-color: #92e7e7; border-left:6px solid #9b59b6;     border-radius:12px; 
+    border:1px solid #ccc; }
+  .row.format-quadColon{background-color: #92e7e7; border-left:6px solid #20c997;     border-radius:12px; 
+    border:1px solid #ccc; }
+  .row .label { margin-bottom:4px; }
+  .row .value { font-family:monospace; font-size:15px; word-break:break-all; text-align:center; }
+  button { padding:6px 10px; border:none; border-radius:6px; cursor:pointer; font-size:50px; }
+  .row button { background:rgb(68, 219, 149); color:#fafafa; border:1px solid rgba(0,0,0,0.08); }
   .label { font-weight:bold; font-size:14px; }
-  .value { font-family:monospace; font-size:15px; word-break:break-all; }
+  .value { font-family:monospace; font-size:15px; word-break:break-all; text-align: center; }
   button { padding:6px 10px; border:none; border-radius:6px; background:#007aff; color:white; cursor:pointer; font-size:14px; }
   button:active { opacity:0.8; }
   .invalid { border-color:red; }
-  @media(max-width:480px){ .row { flex-direction:column; align-items:flex-start; } button { margin-top:6px; } }
+  .row > div:first-child {
+    flex:1;
+    text-align:center;
+    color: rgb(7, 0, 0);
+  }
+  @media(max-width:480px){ .row { flex-direction:column; align-items:flex-center; } button { margin-top:6px; } }
+
 </style>
 </head>
 <body>
@@ -24,7 +103,7 @@
   <label>Input MAC / ONU:</label>
   <input id="macInput" placeholder="Enter MAC (any format)">
 
-  <div id="outputs"></div>
+  <div id="outputs"></div style="text-align:center"></div>
 </div>
 
 <script>
@@ -59,7 +138,7 @@ const formats = [
 
 const outputBox = document.getElementById('outputs');
 outputBox.innerHTML = formats.map(f => `
- <div class='row'>
+<div class='row format-${f.id}'>
     <div>
       <div class='label'>${f.label}</div>
       <div class='value' id='${f.id}'></div>
@@ -94,11 +173,12 @@ function copyText(id, btn){
     setTimeout(() => {
       btn.textContent = prev;
       btn.disabled = false;
-    }, 1500); // change duration here (ms)
+    }, 500); // change duration here (ms)
   }
   showToast();
 }
 
+/*
 function showToast(){
   const t = document.getElementById('toast');
   t.style.display = 'block';
@@ -106,6 +186,7 @@ function showToast(){
   setTimeout(() => { t.style.opacity = 0; }, 1200);
   setTimeout(() => { t.style.display = 'none'; }, 1600);
 }
+*/
 </script>
 <div id="toast" style="position:fixed;top:15px;left:50%;transform:translateX(-100%);background:#111;color:#fff;padding:10px 18px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .3s;z-index:999;">Copied!</div>
 </body>
