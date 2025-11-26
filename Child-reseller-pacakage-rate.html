@@ -10,6 +10,14 @@ input[type=number]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
+/* Change placeholder color */
+.form-control::placeholder {
+    color: #0000003b; /* Red color */
+    opacity: 1;      /* Optional: make sure color is fully opaque */
+}
+.form-control:focus::placeholder {
+    color: transparent;
+}
 </style>
 </head>
 <body class="bg-light p-4">
