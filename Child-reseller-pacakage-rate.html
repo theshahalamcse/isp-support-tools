@@ -38,6 +38,18 @@ input[type=number]::-webkit-outer-spin-button {
 #toast.show {
   opacity: 1;
 }
+#c1, #c2, #c3, #c4, #c5 {
+    border: 2px dotted rgba(0, 0, 0, 0.342) !important;
+    padding: 8px;
+    cursor: pointer;
+     
+}
+#c1:hover, #c2:hover, #c3:hover, #c4:hover, #c5:hover {
+    background-color: #bebebe2f;
+    
+     
+}
+
 </style>
 </head>
 <body class="bg-light p-4">
@@ -60,7 +72,7 @@ input[type=number]::-webkit-outer-spin-button {
             <tr>
                 <td><input type="number" id="a1" class="form-control text-center" oninput="calculateRows()" placeholder="Input your base price"></td>
                 <td><input type="number" id="b1" class="form-control text-center" oninput="calculateRows()" placeholder="Input your base price"></td>
-                <td id="c1"></td>
+                <td id="c1" style="border: 1px dotted blue;"></td>
                 <td id="p1"></td>
             </tr>
             <!-- Rows 2-5 (Auto-generate B based on Row 1 %) -->
