@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <plaintext>
+        dba-profile add profile-id 100 profile-name "onegig" type4 max 1024000 priority 1 weight 1
+ xpon anti-rogueont autodetect on
+ ont auto-aging 3
+ ont-srvprofile gpon profile-id 100 profile-name "onegig"
+  ont-port pots adaptive 32 eth adaptive 8
+  port vlan eth 1 transparent
+  port vlan eth 2 transparent
+  port vlan eth 3 transparent
+  port vlan eth 4 transparent
+  commit
+ ont-srvprofile gpon profile-id 200 profile-name "CLI-S0P0"
+ ont-lineprofile gpon profile-id 0 profile-name "line-profile_default_0"
+  tcont 0 dba-profile-id 2
+  tcont 1 dba-profile-id 0
+  commit
+  quit
+ ont-lineprofile gpon profile-id 100 profile-name "S1P0"
+  tcont 1 dba-profile-id 100
+  gem add 1 eth tcont 1
+  gem mapping 1 0 vlan 400
+  commit
+  quit
+ ont-lineprofile gpon profile-id 101 profile-name "S1P1"
+  tcont 1 dba-profile-id 100
+  gem add 1 eth tcont 1
+  gem mapping 1 0 vlan 401
+  commit
+  quit
+ ont-lineprofile gpon profile-id 102 profile-name "S1P2"
+  tcont 1 dba-profile-id 100
+  gem add 1 eth tcont 1
+  gem mapping 1 0 vlan 402
+  commit
+  quit
+--------------------------------------------------
+OLT-NAME#display ont autofind all
+OLT-NAME(config-if-gpon-0/4)#ont add 4 0 sn-auth 4857544355144073 omci ont-lineprofile-id 324 ont-srvprofile-id 100 desc "kh@kabir"
+OLT-NAME(config-if-gpon-0/4)#ont port native-vlan 4 0 eth 1 vlan 464 priority 0
+OLT-NAME(config)#service-port vlan 464 gpon 0/4/4 ont 0 gemport 1 multi-service user-vlan 464 tag-transform translate
+    </plaintext>
+</body>
+</html>
