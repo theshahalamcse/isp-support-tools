@@ -93,6 +93,7 @@
     <table id="calcTable">
         <thead>
             <tr>
+                <th>Package</th>
                 <th>OLD_price (A)</th>
                 <th>percent-decrement (B)</th>
                 <th>final_price (C)</th>
@@ -100,6 +101,31 @@
         </thead>
         <tbody id="tableBody">
             <tr>
+                <td>20MB</td>
+                <td><input type="number" class="old-price" placeholder="Enter price" step="0.01" min="0"></td>
+                <td><input type="number" class="percent" placeholder="Enter %" step="0.01" min="0" max="100"></td>
+                <td class="final-price">0.00</td>
+            </tr>
+            <tr>
+                <td>40MB</td>
+                <td><input type="number" class="old-price" placeholder="Enter price" step="0.01" min="0"></td>
+                <td><input type="number" class="percent" placeholder="Enter %" step="0.01" min="0" max="100"></td>
+                <td class="final-price">0.00</td>
+            </tr>
+            <tr>
+                <td>50MB</td>
+                <td><input type="number" class="old-price" placeholder="Enter price" step="0.01" min="0"></td>
+                <td><input type="number" class="percent" placeholder="Enter %" step="0.01" min="0" max="100"></td>
+                <td class="final-price">0.00</td>
+            </tr>
+            <tr>
+                <td>70MB</td>
+                <td><input type="number" class="old-price" placeholder="Enter price" step="0.01" min="0"></td>
+                <td><input type="number" class="percent" placeholder="Enter %" step="0.01" min="0" max="100"></td>
+                <td class="final-price">0.00</td>
+            </tr>
+            <tr>
+                <td>100MB</td>
                 <td><input type="number" class="old-price" placeholder="Enter price" step="0.01" min="0"></td>
                 <td><input type="number" class="percent" placeholder="Enter %" step="0.01" min="0" max="100"></td>
                 <td class="final-price">0.00</td>
@@ -140,6 +166,7 @@
             const tbody = document.getElementById('tableBody');
             const newRow = document.createElement('tr');
             newRow.innerHTML = `
+                <td><input type="text" class="package-name" placeholder="Package name"></td>
                 <td><input type="number" class="old-price" placeholder="Enter price" step="0.01" min="0"></td>
                 <td><input type="number" class="percent" placeholder="Enter %" step="0.01" min="0" max="100"></td>
                 <td class="final-price">0.00</td>
