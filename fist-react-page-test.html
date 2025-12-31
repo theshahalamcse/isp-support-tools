@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Attendance Tracker</title>
+
+  <!-- React CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-100">
+
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    function AttendanceTracker() {
+      const areas = [
+        { name: 'MRD', color: 'bg-red-300' },
+        { name: 'SHK', color: 'bg-blue-300' },
+        { name: 'NSB', color: 'bg-purple-300' },
+        { name: 'APH', color: 'bg-indigo-300' },
+        { name: 'DHA', color: 'bg-orange-400' },
+        { name: 'PACH', color: 'bg-green-600' }
+      ];
+
+      const [attendance, setAttendance] = useState(() => {
+        const initial = {};
+        areas.forEach(area => {
+          initial[area.name] = Array(31).fill(false);
+        });
+        return initial;
+      });
+
+      const toggleAttendance = (areaName, day) => {
+        setAttendance(prev => ({
+          ...prev,
+          [areaName]: prev[areaName].map((val, idx) =>
+            idx === day ? !val : val
+          )
+        }));
+      };
+
+      const getTotal = (areaName) =>
+        attendance[areaName].filter(Boolean).length;
+
+      const getGrandTotal = () =>
+        areas.reduce((sum, area) => sum + getTotal(area.name), 0);
+
+      return (
+        <div className="w-full h-screen bg-gray-50 p-4 overflow-auto">
+          <div className="mb-4 flex items-center gap-2">
+            <i data-lucide="calendar" className="w-6 h-6 text-blue-600"></i>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Attendance Tracker
+            </h1>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-lg overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border px-3 py-2 sticky left-0 bg-gray-100 z-10">
+                    DATE
+                  </th>
+                  {[...Array(31)].map((_, i) => (
+                    <th key={i} className="border px-2 py-2 min-w-[40px]">
+                      {i + 1}
+                    </th>
+                  ))}
+                  <th className="border px-3 py-2 sticky right-0 bg-gray-100 z-10">
+                    TOTAL
+                  </th>
+                </tr>
+                <tr className="bg-green-200">
+                  <th className="border px-3 py-2 sticky left-0 bg-green-200 z-10">
+                    AREA NAME
+                  </th>
+                  {[...Array(31)].map((_, i) => (
+                    <th key={i} className="border px-2 py-2"></th>
+                  ))}
+                  <th className="border px-3 py-2 sticky right-0 bg-green-200 z-10"></th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {areas.map(area => (
+                  <tr key={area.name}>
+                    <td className="border px-3 py-2 sticky left-0 bg-white z-10">
+                      {area.name}
+                    </td>
+
+                    {[...Array(31)].map((_, day) => (
+                      <td
+                        key={day}
+                        onClick={() => toggleAttendance(area.name, day)}
+                        className={`border px-2 py-2 cursor-pointer ${
+                          attendance[area.name][day]
+                            ? area.color
+                            : 'hover:bg-gray-100'
+                        }`}
+                      >
+                        <div className="h-6"></div>
+                      </td>
+                    ))}
+
+                    <td className="border px-3 py-2 text-center sticky right-0 bg-white z-10">
+                      {getTotal(area.name)}
+                    </td>
+                  </tr>
+                ))}
+
+                <tr className="bg-gray-100 font-bold">
+                  <td className="border px-3 py-2 sticky left-0 bg-gray-100 z-10">
+                    TOTAL
+                  </td>
+
+                  {[...Array(31)].map((_, day) => {
+                    const dayTotal = areas.reduce(
+                      (sum, area) =>
+                        sum + (attendance[area.name][day] ? 1 : 0),
+                      0
+                    );
+                    return (
+                      <td key={day} className="border px-2 py-2 text-center">
+                        {dayTotal || ''}
+                      </td>
+                    );
+                  })}
+
+                  <td className="border px-3 py-2 text-center sticky right-0 bg-gray-100 z-10">
+                    {getGrandTotal()}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mt-4 text-sm text-gray-600">
+            Click any cell to toggle attendance.
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<AttendanceTracker />);
+
+    // Activate lucide icons
+    lucide.createIcons();
+  </script>
+</body>
+</html>
