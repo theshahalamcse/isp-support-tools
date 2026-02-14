@@ -1,32 +1,36 @@
-If you make some changes locally (edit files, add new code, etc.), 
-and you want to update your remote repository on GitHub, just follow these 3 simple steps
+//If you make some changes locally (edit files, add new code, etc.), 
+//and you want to update your remote repository on GitHub, just follow these 3 simple steps
 
 file path>
 file path>git add .
 file path>git commit -m "add comment sothat next you can determine which is change in your code at last step"
 file path>git push origin main
 ----------------------------------------------------------------------
-You’ve already pushed successfully to GitHub,
-and now you want your local files to exactly match what’s on GitHub (the last push).
+//You’ve already pushed successfully to GitHub,
+//and now you want your local files to exactly match what’s on GitHub (the last push).
 
 file path>git fetch origin
 file path>git reset --hard origin/main
 ----------------------------------------------------------------------
-create a new repository on the command line
+//create a new repository on the command line
 
 file path>echo "# test" >> README.md
 file path>git init
 file path>git add README.md
 file path>git commit -m "first commit"
 file path>git branch -M main
-file path>git remote add origin git@github.com:yourGithubUsrName/YourRepositoryName.git
-or
 file path>git remote add origin https://github.com/yourGithubUsrName/YourRepositoryName.git
 file path>git push -u origin main
 ----------------------------------------------------------
 
-or push an existing repository from the command line
+// Upload local fold to github repository
+// using bash go to your targetted project folder which will upload on github repository
 
-file path>git remote add origin https://git@github.com:yourGithubUsrName/YourRepositoryName.git
-file path>git branch -M main
-file path>git push -u origin main
+
+file path>git init
+file path>git add .
+file path>git commit -m "Initial commit"
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin https://github.com/USERNAME/REPO_NAME.git
+git push -u origin main
