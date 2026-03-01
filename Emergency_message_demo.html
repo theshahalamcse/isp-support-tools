@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discovery Internet – Message Templates</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --card: #ecf5f4;
+    --border: #ffffff;
+    --accent: #00b4ff;
+    --accent2: #ff6b35;
+    --accent3: #00e5a0;
+    --warn: #ffb800;
+    --danger: #ff4757;
+    --text: #000000;
+    --muted: #6b7fa3;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans Bengali', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+    main {
+    position: relative;
+    z-index: 5;
+    padding: 20px 24px;
+  }
+
+  /* Animated background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,180,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,180,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 32px 40px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(180deg, rgba(0,180,255,0.06) 0%, transparent 100%);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, var(--accent), #0070ff);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+
+  .logo h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #fff;
+  }
+
+  .logo p {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .hotline {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+
+  .hotline span { font-size: 11px; color: var(--muted); display: block; text-align: right; }
+
+
+
+  .page-title {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .page-title h2 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .page-title p { color: var(--muted); font-size: 14px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card:nth-child(1) { animation-delay: 0.05s; }
+  .card:nth-child(2) { animation-delay: 0.10s; }
+  .card:nth-child(3) { animation-delay: 0.15s; }
+  .card:nth-child(4) { animation-delay: 0.20s; }
+  .card:nth-child(5) { animation-delay: 0.25s; }
+
+  .card-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .badge {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .badge.red    { background: rgba(255,71,87,0.15); border: 1px solid rgba(255,71,87,0.3); }
+  .badge.orange { background: rgba(255,107,53,0.15); border: 1px solid rgba(255,107,53,0.3); }
+  .badge.yellow { background: rgba(255,184,0,0.15); border: 1px solid rgba(255,184,0,0.3); }
+  .badge.cyan   { background: rgba(0,180,255,0.15); border: 1px solid rgba(0,180,255,0.3); }
+  .badge.green  { background: rgba(0,229,160,0.15); border: 1px solid rgba(0,229,160,0.3); }
+
+  .card-header-text h3 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .card-header-text span {
+    font-size: 15px;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .label-red    { color: var(--danger); }
+  .label-orange { color: var(--accent2); }
+  .label-yellow { color: var(--warn); }
+  .label-cyan   { color: var(--accent); }
+  .label-green  { color: var(--accent3); }
+
+  .card-body {
+    padding: 10px;
+  }
+
+  .message-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 15px;
+    line-height: 1.9;
+    color: #000000;
+    white-space: pre-wrap;
+    min-height: 120px;
+    font-family: 'Noto Sans Bengali', sans-serif;
+  }
+
+  .copy-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 14px;
+    width: 100%;
+    padding: 10px 0;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+
+  .copy-btn:active { transform: scale(0.97); }
+  .copy-btn:hover { opacity: 0.85; }
+
+  .copy-btn.red    { background: linear-gradient(135deg, #ff4757, #c0392b); color: #fff; }
+  .copy-btn.orange { background: linear-gradient(135deg, #ff6b35, #e55b28); color: #fff; }
+  .copy-btn.yellow { background: linear-gradient(135deg, #ffb800, #e0a000); color: #111; }
+  .copy-btn.cyan   { background: linear-gradient(135deg, #00b4ff, #0070ff); color: #fff; }
+  .copy-btn.green  { background: linear-gradient(135deg, #00e5a0, #00b87a); color: #111; }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--accent3);
+    color: #0a0e1a;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 12px 28px;
+    border-radius: 100px;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+    pointer-events: none;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  footer {
+    text-align: center;
+    padding: 32px;
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 1px;
+    border-top: 1px solid var(--border);
+    position: relative;
+    z-index: 5;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🌐</div>
+    <div>
+      <h1>DISCOVERY INTERNET</h1>
+      <p>Message Template Panel</p>
+    </div>
+  </div>
+  <div class="hotline">
+    09638336633
+    <span>Support Hotline</span>
+  </div>
+</header>
+
+<main>
+
+
+  <div class="grid">
+
+    <!-- PON DOWN -->
+    <div class="card">
+      <div class="card-header">
+        <div class="badge red">📡</div>
+        <div class="card-header-text">
+          <h3 class="label-red">PON DOWN Issue</h3>
+          <span>সম্পূর্ণ সার্ভিস বন্ধ</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="message-box" id="msg1">আসসালামুলাইকুম
+সম্মানিত গ্রাহক আপনার অবগতির জন্যে জানানো যাচ্ছে যে, আমাদের একটি ফাইবার ডাউন থাকার কারণে এখন আপনি সার্ভিস পাচ্ছেন না। সাময়িক সমস্যার জন্যে আমরা আন্তরিকভাবে দুঃখিত। আমাদের টিম কাজ করতাছে। যত দ্রুত সম্ভব আমরা রিকভারি করার ব্যবস্থা করছি। ইনশাআল্লাহ অল্প সময়ের মধ্যে সার্ভিস একটিভ হবে।
+
+ধন্যবাদ ডিসকভারি ইন্টারনেট এর সাথে থাকার জন্যে।
+ডিসকভারি ইন্টারনেট
+📞 09638336633</div>
+        <button class="copy-btn red" onclick="copyMsg('msg1', this)">📋 কপি করুন</button>
+      </div>
+    </div>
+
+    <!-- Multi Fiber Down -->
+    <div class="card">
+      <div class="card-header">
+        <div class="badge orange">⚡</div>
+        <div class="card-header-text">
+          <h3 class="label-orange">Multi-Fiber Down Issue</h3>
+          <span>পল্লি বিদ্যুৎ সমস্যা</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="message-box" id="msg2">আসসালামুলাইকুম
+সম্মানিত গ্রাহক আপনার অবগতির জন্যে জানানো যাচ্ছে যে, পল্লি বিদ্যুৎ ইসুতে আমাদের মাল্টিপাথে মাল্টি ফাইবার ডাউন থাকার কারণে এখন আপনি সার্ভিস পাচ্ছেন না। সাময়িক সমস্যার জন্যে আমরা আন্তরিকভাবে দুঃখিত। আমাদের টিম কাজ করতাছে। যত দ্রুত সম্ভব আমরা রিকভারি করার ব্যবস্থা করছি। ইনশাআল্লাহ অল্প সময়ের মধ্যে সার্ভিস একটিভ হবে।
+
+ধন্যবাদ ডিসকভারি ইন্টারনেট এর সাথে থাকার জন্যে।
+ডিসকভারি ইন্টারনেট
+📞 09638336633</div>
+        <button class="copy-btn orange" onclick="copyMsg('msg2', this)">📋 কপি করুন</button>
+      </div>
+    </div>
+
+    <!-- Single Fiber Speed Issue -->
+    <div class="card">
+      <div class="card-header">
+        <div class="badge yellow">🐢</div>
+        <div class="card-header-text">
+          <h3 class="label-yellow">Single Fiber Down – Speed Issue</h3>
+          <span>স্পিড সমস্যা</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="message-box" id="msg3">আসসালামুলাইকুম
+আপনার অবগতির জন্যে জানানো যাচ্ছে যে, আমাদের একটা ব্যাকবন ফাইবার ডাউন আছে। স্পিড সংক্রান্ত ইসু পাবেন। সাময়িক সমস্যার জন্যে আমরা আন্তরিকভাবে দুঃখিত। টিম পাঠানো হয়েছে। ইনশাআল্লাহ দ্রুত সময়ের মধ্যে সার্ভিস স্টেবল হবে।
+
+ডিসকভারি ইন্টারনেট
+📞 09638336633</div>
+        <button class="copy-btn yellow" onclick="copyMsg('msg3', this)">📋 কপি করুন</button>
+      </div>
+    </div>
+    <!--test-->
+    <div class="card">
+      <div class="card-header">
+        <div class="badge yellow">🐢</div>
+        <div class="card-header-text">
+          <h3 class="label-yellow">Single Fiber Down – Speed Issue</h3>
+          <span>স্পিড সমস্যা</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="message-box" id="msg3">আসসালামুলাইকুম
+আপনার অবগতির জন্যে জানানো যাচ্ছে যে, আমাদের একটা ব্যাকবন ফাইবার ডাউন আছে। স্পিড সংক্রান্ত ইসু পাবেন। সাময়িক সমস্যার জন্যে আমরা আন্তরিকভাবে দুঃখিত। টিম পাঠানো হয়েছে। ইনশাআল্লাহ দ্রুত সময়ের মধ্যে সার্ভিস স্টেবল হবে।
+
+ডিসকভারি ইন্টারনেট
+📞 09638336633</div>
+        <button class="copy-btn yellow" onclick="copyMsg('msg3', this)">📋 কপি করুন</button>
+      </div>
+    </div>
+
+    <!-- Emergency Issue -->
+    <div class="card">
+      <div class="card-header">
+        <div class="badge cyan">🔧</div>
+        <div class="card-header-text">
+          <h3 class="label-cyan">Emergency Issue – Maintenance</h3>
+          <span>জরুরি মেরামত</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="message-box" id="msg4">আসসালামুলাইকুম
+আপনার অবগতির জন্যে জানানো যাচ্ছে যে, আমাদের একটা ব্যাকবন ফাইবার ইমারজেন্সি ইসুতে মেরামত করা হবে। সার্ভিস ১০ থেকে ১৫ মিনিট ডাউন থাকবে। সাময়িক সমস্যার জন্যে আমরা আন্তরিকভাবে দুঃখিত। ইনশাআল্লাহ দ্রুত সময়ের মধ্যে সার্ভিস আপ হবে।
+
+ডিসকভারি ইন্টারনেট
+📞 09638336633</div>
+        <button class="copy-btn cyan" onclick="copyMsg('msg4', this)">📋 কপি করুন</button>
+      </div>
+    </div>
+
+    <!-- Fixed / Resolved -->
+    <div class="card">
+      <div class="card-header">
+        <div class="badge green">✅</div>
+        <div class="card-header-text">
+          <h3 class="label-green">Service Fixed / Resolved</h3>
+          <span>মেরামত সম্পন্ন</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="message-box" id="msg5">আসসালামুলাইকুম
+আপনার অবগতির জন্যে জানানো যাচ্ছে যে, মেরামত সংক্রান্ত কাজ সম্পূর্ণ হয়েছে। সকল সার্ভিস সচল হয়েছে। কোন ইসু পেলে জানাবেন।
+
+ডিসকভারি ইন্টারনেট
+📞 09638336633</div>
+        <button class="copy-btn green" onclick="copyMsg('msg5', this)">📋 কপি করুন</button>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast" id="toast">✅ বার্তা কপি হয়েছে!</div>
+
+<footer>
+  © Discovery Internet · 09638336633 · Template Panel v1.0
+</footer>
+
+<script>
+  function copyMsg(id, btn) {
+    const text = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      const original = btn.innerHTML;
+      btn.innerHTML = '✅ কপি হয়েছে!';
+      btn.style.opacity = '0.7';
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => {
+        btn.innerHTML = original;
+        btn.style.opacity = '';
+        toast.classList.remove('show');
+      }, 2000);
+    });
+  }
+</script>
+
+</body>
+</html>
