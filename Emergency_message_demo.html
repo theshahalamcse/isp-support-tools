@@ -58,7 +58,7 @@
     align-items: center;
     justify-content: space-between;
     color: var(--text);
-    background: rgb(210, 252, 210);
+    background: #ecf5f4;
   }
   .header-left {
     display: flex;
@@ -104,7 +104,7 @@
 
   .logo p {
     font-size: 11px;
-    color: black
+    color: black;
     letter-spacing: 2px;
     text-transform: uppercase;
   }
@@ -184,11 +184,11 @@
     flex-shrink: 0;
   }
 
-  .badge.red    { background: rgba(255,71,87,0.15); border: 1px solid rgba(255,71,87,0.3); }
-  .badge.orange { background: rgba(255,107,53,0.15); border: 1px solid rgba(255,107,53,0.3); }
-  .badge.yellow { background: rgba(255,184,0,0.15); border: 1px solid rgba(255,184,0,0.3); }
-  .badge.cyan   { background: rgba(0,180,255,0.15); border: 1px solid rgba(0,180,255,0.3); }
-  .badge.green  { background: rgba(0,229,160,0.15); border: 1px solid rgba(0,229,160,0.3); }
+  .badge.red    { background: white; }
+  .badge.orange { background: white;}
+  .badge.yellow { background: white; }
+  .badge.cyan   { background: white; }
+  .badge.green  { background: white; }
 
   .card-header-text h3 {
     font-family: 'Rajdhani', sans-serif;
@@ -204,11 +204,11 @@
     letter-spacing: 1px;
   }
 
-  .label-red    { color: var(--danger); }
-  .label-orange { color: var(--accent2); }
-  .label-yellow { color: var(--warn); }
+  .label-red    { color: var(--accent); }
+  .label-orange { color: var(--accent); }
+  .label-yellow { color: var(--accent); }
   .label-cyan   { color: var(--accent); }
-  .label-green  { color: var(--accent3); }
+  .label-green  { color: var(--accent); }
 
   .card-body {
     padding: 10px;
@@ -279,11 +279,11 @@
   .copy-btn:active { transform: scale(0.97); }
   .copy-btn:hover { opacity: 0.85; }
 
-  .copy-btn.red    { background: linear-gradient(135deg, #ff4757, #c0392b); color: #fff; }
-  .copy-btn.orange { background: linear-gradient(135deg, #ff6b35, #e55b28); color: #fff; }
-  .copy-btn.yellow { background: linear-gradient(135deg, #ffb800, #e0a000); color: #111; }
-  .copy-btn.cyan   { background: linear-gradient(135deg, #00b4ff, #0070ff); color: #fff; }
-  .copy-btn.green  { background: linear-gradient(135deg, #00e5a0, #00b87a); color: #111; }
+  .copy-btn.red    { background: #c9f0ed; }
+  .copy-btn.orange { background: #c9f0ed; }
+  .copy-btn.yellow { background: #c9f0ed; }
+  .copy-btn.cyan   { background: #c9f0ed; }
+  .copy-btn.green  { background: #c9f0ed; }
 
   .toast {
     position: fixed;
@@ -406,16 +406,16 @@
     <!--NEW CLIENT FIRST MESSAGE-->
     <div class="card">
       <div class="card-header">
-        <div class="badge yellow">🐢</div>
+        <div class="badge yellow">🆕</div>
         <div class="card-header-text">
           <h3 class="label-yellow">NEW CLIENT FIRST MESSAGE</h3>
-          <span>স্পিড সমস্যা</span>
+          <span>নিউ ক্লাইন্ড প্রথম বার্তা</span>
         </div>
       </div>
       <div class="card-body">
-        <div class="message-box" id="msg4">আসসালামুলাইকুম
-আপনার অবগতির জন্যে জানানো যাচ্ছে যে, আমাদের একটা ব্যাকবন ফাইবার ডাউন আছে। স্পিড সংক্রান্ত ইসু পাবেন। সাময়িক সমস্যার জন্যে আমরা আন্তরিকভাবে দুঃখিত। টিম পাঠানো হয়েছে। ইনশাআল্লাহ দ্রুত সময়ের মধ্যে সার্ভিস স্টেবল হবে।
-
+        <div class="message-box" id="msg4">জনাব
+আসসালামুলাইকুম,আপনি এখানে আপনার নেটওয়ার্ক সংক্রান্ত সমস্যা এবং বিলিং সংক্রান্ত সমস্যা শেয়ার করতে পারেন। আমরা আপনাকে নেটওয়ার্ক সম্পর্কিত যে কোনো ধরনের সমস্যা এবং বিলিং সমস্যা সমাধানে সহায়তা করব।
+দ্রষ্টব্য: আমাদের আপনার সহায়তা প্রয়োজন |
 ডিসকভারি ইন্টারনেট
 📞 09638336633</div>
         <button class="show-more-btn" onclick="toggleShowMore(this)">click more</button>
@@ -453,7 +453,28 @@
         </div>
       </div>
       <div class="card-body">
-        <div class="message-box" id="msg6">* ডেট/টাইম/রিজিওন (ঢাকা,বাংলাদেশ) ঠিক করা | 
+        <div class="message-box" id="msg6">আসসালামুলাইকুম, 
+আপনার অবগতির জন্যে জানানো যাচ্ছে যে, মেরামত সংক্রান্ত কাজ সম্পূর্ণ হয়েছে।
+সকল সার্ভিস সচল হয়েছে। কোন ইসু পেলে জানাবেন।
+
+ডিসকভারি ইন্টারনেট</div>
+        <button class="show-more-btn" onclick="toggleShowMore(this)">click more</button>
+        <button class="copy-btn green" onclick="copyMsg('msg6', this)">📋 কপি করুন</button>
+      </div>
+    </div>
+    <!-- New home router set up -->
+    <div class="card">
+      <div class="card-header">
+        <div class="badge cyan">🏠</div>
+        <div class="card-header-text">
+          <h3 class="label-cyan">New Home Router Setup</h3>
+          <span>নতুন হোম রাউটার সেটআপ</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="message-box" id="msg7">*রাউটার কনফিগার করতে যে সকল ধাপগুলো পালন করবেন ***
+
+* ডেট/টাইম/রিজিওন (ঢাকা,বাংলাদেশ) ঠিক করা | 
 *রাউটার কনফিগার করতে যে সকল ধাপগুলো পালন করবেন ***
 
 * ডেট/টাইম/রিজিওন (ঢাকা,বাংলাদেশ) ঠিক করা | 
@@ -470,10 +491,58 @@
 *  স্ট্রং পাসওয়ার্ড (স্পেশাল ক্যারেক্টার) ব্যাবহার করা | 
 *  নিয়মিত রাউটার ফার্মওয়্যার আপগ্রেড রাখা |
 *  রাউটারের সাথের শর্ট ক্যাবল ব্যাবহার না করা |
-
-ডিসকভারি ইন্টারনেট</div>
+      </div>
         <button class="show-more-btn" onclick="toggleShowMore(this)">click more</button>
-        <button class="copy-btn green" onclick="copyMsg('msg6', this)">📋 কপি করুন</button>
+        <button class="copy-btn cyan" onclick="copyMsg('msg7', this)">📋 কপি করুন</button>
+      </div>
+    </div>
+    <!-- Contact Technical and Billing -->
+    <div class="card">
+      <div class="card-header">
+        <div class="badge cyan">📞</div>
+        <div class="card-header-text">
+          <h3 class="label-cyan">Contact Technical and Billing</h3>
+          <span>প্রযুক্তিগত এবং বিলিংয়ের যোগাযোগ</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="message-box" id="msg8">সকল সমস্যা হোয়াটস্যাপ গ্রুপে জানানোর জন্য অনুরোধ  করা হলো
+
+ব্যালান্স সংক্রান্ত ব্যাপারে এইসকল নম্বরে কথা বলুন :
+accounts: 01313402422
+accounts: 01313402417
+accounts: 01313402429
+
+সাপোর্ট  সংক্রান্ত ব্যাপারে এইসকল নম্বরে কথা বলুন :
+support: 01313402415
+support: 01313402418
+support: 01313402431
+support: 01313402432
+support: 01313402414</div>
+        <button class="show-more-btn" onclick="toggleShowMore(this)">click more</button>
+        <button class="copy-btn cyan" onclick="copyMsg('msg8', this)">📋 কপি করুন</button>
+      </div>
+    </div>
+    <!--Link-->
+    <div class="card">
+      <div class="card-header">
+        <div class="badge cyan">🔗</div>
+        <div class="card-header-text">
+          <h3 class="label-cyan">Link</h3>
+          <span>লিঙ্ক</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="message-box" id="msg9">FTP:
+https://discoveryftp.net/
+
+TV:
+https://imotv.net/
+
+ANDROID APP (for mobile and TV)
+https://imotv.net/cricbaz-3.1.apk</div>
+        <button class="show-more-btn" onclick="toggleShowMore(this)">click more</button>
+        <button class="copy-btn cyan" onclick="copyMsg('msg9', this)">📋 কপি করুন</button>
       </div>
     </div>
 
