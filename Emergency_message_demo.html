@@ -27,6 +27,8 @@
     background-repeat: repeat;
     color: var(--text);
     font-family: 'Noto Sans Bengali', sans-serif;
+    display: flex;
+    flex-direction: column;
     min-height: 100vh;
     overflow-x: hidden;
   }
@@ -34,6 +36,7 @@
     position: relative;
     z-index: 5;
     padding: 20px 24px;
+    flex: 1;
   }
 
   /* Animated background grid */
@@ -308,7 +311,8 @@
   footer {
     text-align: center;
     padding: 32px;
-    color: var(--muted);
+    color: black;
+    background-color:#dbf5f3; 
     font-size: 12px;
     letter-spacing: 1px;
     border-top: 1px solid var(--border);
