@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Excel → CSV Converter</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --bg: #0b0f1a;
+      --surface: #111827;
+      --card: #161d2f;
+      --accent: #00e5ff;
+      --accent2: #7c3aed;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --border: #1e2d45;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper { position: relative; z-index: 1; }
+
+    /* Header */
+    header {
+      padding: 2rem 0 1rem;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.3rem;
+    }
+    header p {
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Cards */
+    .glass-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.8rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.4);
+    }
+
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Drop zone */
+    #dropZone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 3rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      background: rgba(0,229,255,0.02);
+      position: relative;
+    }
+    #dropZone:hover, #dropZone.dragover {
+      border-color: var(--accent);
+      background: rgba(0,229,255,0.06);
+      box-shadow: 0 0 30px rgba(0,229,255,0.1);
+    }
+    #dropZone .icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+    #dropZone h5 { font-weight: 700; margin-bottom: 0.4rem; }
+    #dropZone p { color: var(--muted); font-size: 0.85rem; margin: 0; }
+    #fileInput { display: none; }
+
+    /* Area mapping table */
+    #areaTable th {
+      background: var(--surface);
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      padding: 0.75rem 1rem;
+      border-color: var(--border);
+      font-weight: 400;
+    }
+    #areaTable td {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--border);
+      padding: 0.6rem 1rem;
+      vertical-align: middle;
+    }
+    #areaTable tr:hover td { background: rgba(255,255,255,0.02); }
+    .area-name-input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 4px 10px;
+      width: 130px;
+      font-size: 0.85rem;
+    }
+    .area-name-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(0,229,255,0.15);
+    }
+    .area-id-badge {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(0,229,255,0.1);
+      color: var(--accent);
+      border: 1px solid rgba(0,229,255,0.2);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.78rem;
+      display: inline-block;
+    }
+    .btn-add-area {
+      background: transparent;
+      border: 1px dashed var(--accent);
+      color: var(--accent);
+      font-size: 0.82rem;
+      padding: 6px 16px;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .btn-add-area:hover {
+      background: rgba(0,229,255,0.08);
+      color: var(--accent);
+    }
+    .btn-del {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 1rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: color 0.2s;
+    }
+    .btn-del:hover { color: #ef4444; }
+
+    /* Date format selector */
+    .format-pills { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .format-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .format-pill:hover { border-color: var(--accent); color: var(--accent); }
+    .format-pill.active {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* Status / preview */
+    #statusBar {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+      display: none;
+    }
+    #statusBar.show { display: flex; align-items: center; gap: 0.6rem; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex-shrink: 0; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* Convert button */
+    #convertBtn {
+      background: linear-gradient(135deg, var(--accent), #0099bb);
+      color: #000;
+      font-weight: 800;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      border: none;
+      border-radius: 10px;
+      padding: 0.85rem 2.5rem;
+      transition: all 0.25s;
+      box-shadow: 0 4px 20px rgba(0,229,255,0.3);
+    }
+    #convertBtn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,229,255,0.45);
+    }
+    #convertBtn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Preview table */
+    #previewWrap { display: none; }
+    #previewWrap.show { display: block; }
+    .preview-scroll { overflow-x: auto; max-height: 260px; overflow-y: auto; border-radius: 8px; border: 1px solid var(--border); }
+    .preview-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .preview-scroll::-webkit-scrollbar-track { background: var(--surface); }
+    .preview-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    #previewTable { width: 100%; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; margin: 0; }
+    #previewTable thead th {
+      background: var(--surface);
+      color: var(--accent);
+      padding: 0.5rem 0.8rem;
+      border-color: var(--border);
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+    }
+    #previewTable tbody td {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--border);
+      padding: 0.4rem 0.8rem;
+      white-space: nowrap;
+    }
+    #previewTable tbody tr:hover td { background: rgba(255,255,255,0.025); }
+
+    /* Download button */
+    #downloadBtn {
+      background: linear-gradient(135deg, var(--success), #059669);
+      color: #fff;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      padding: 0.75rem 2rem;
+      font-size: 0.95rem;
+      transition: all 0.25s;
+      box-shadow: 0 4px 16px rgba(16,185,129,0.3);
+      display: none;
+    }
+    #downloadBtn.show { display: inline-block; }
+    #downloadBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(16,185,129,0.45);
+    }
+
+    /* Modal overrides */
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      color: var(--text);
+    }
+    .modal-header {
+      border-bottom: 1px solid var(--border);
+      padding: 1.2rem 1.5rem;
+    }
+    .modal-title {
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .modal-footer { border-top: 1px solid var(--border); }
+    .btn-close-modal {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 6px 16px;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .btn-close-modal:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-save-modal {
+      background: var(--accent2);
+      border: none;
+      color: #fff;
+      border-radius: 8px;
+      padding: 7px 20px;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .badge-count {
+      background: rgba(0,229,255,0.12);
+      color: var(--accent);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      padding: 2px 10px;
+      font-family: 'JetBrains Mono', monospace;
+      margin-left: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+<div class="container" style="max-width:900px; padding:1rem 1rem 4rem;">
+
+  <header>
+    <h1>Excel → CSV Converter</h1>
+    <p>ISP Customer Data Transformer</p>
+  </header>
+
+  <!-- Upload -->
+  <div class="glass-card">
+    <div class="section-label">01 &nbsp; Upload Excel File</div>
+    <div id="dropZone" onclick="document.getElementById('fileInput').click()">
+      <span class="icon">📂</span>
+      <h5>Drop your Excel file here</h5>
+      <p>Supports .xlsx / .xls — click or drag & drop</p>
+      <input type="file" id="fileInput" accept=".xlsx,.xls"/>
+    </div>
+    <div id="statusBar" class="mt-3">
+      <span class="dot"></span>
+      <span id="statusText">File loaded</span>
+    </div>
+  </div>
+
+  <!-- Area Mapping -->
+  <div class="glass-card">
+    <div class="section-label">
+      02 &nbsp; Area → ID Mapping
+      <span class="badge-count" id="areaCount">0 areas</span>
+    </div>
+    <p style="color:var(--muted);font-size:0.84rem;margin-bottom:1rem;">
+      Map each <strong style="color:var(--text)">AREA</strong> value from your Excel to a numeric <code style="color:var(--accent)">pop_id</code>. Unmapped areas will use the original name.
+    </p>
+    <div class="table-responsive mb-3" style="max-height:260px;overflow-y:auto;">
+      <table class="table table-borderless mb-0" id="areaTable">
+        <thead>
+          <tr>
+            <th>AREA NAME (from Excel)</th>
+            <th>pop_id (numeric)</th>
+            <th style="width:40px;"></th>
+          </tr>
+        </thead>
+        <tbody id="areaBody"></tbody>
+      </table>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <button class="btn-add-area" onclick="addAreaRow('','')">+ Add Area Mapping</button>
+      <button class="btn-add-area" onclick="openAutoDetectModal()" id="autoDetectBtn" disabled>⚡ Auto-detect from file</button>
+    </div>
+  </div>
+
+  <!-- Date Format -->
+  <div class="glass-card">
+    <div class="section-label">03 &nbsp; Date Format</div>
+    <p style="color:var(--muted);font-size:0.84rem;margin-bottom:0.6rem;">
+      <strong style="color:var(--text)">EXP DATE</strong> &amp; <strong style="color:var(--text)">CREATED</strong> columns are always output as:
+    </p>
+    <div style="display:inline-flex;align-items:center;gap:0.75rem;background:rgba(0,229,255,0.07);border:1px solid rgba(0,229,255,0.2);border-radius:10px;padding:0.6rem 1.2rem;">
+      <span style="font-size:1.3rem;">📅</span>
+      <span style="font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:1rem;font-weight:700;letter-spacing:1px;">10 feb 2025</span>
+      <span style="color:var(--muted);font-size:0.8rem;">&nbsp;— day · short-month · year</span>
+    </div>
+    <p style="color:var(--muted);font-size:0.78rem;margin-top:0.75rem;margin-bottom:0;">
+      Accepts any input format: Excel serial numbers, DD/MM/YYYY, YYYY-MM-DD, MM-DD-YYYY, text dates, and more.
+    </p>
+  </div>
+
+  <!-- Convert -->
+  <div class="glass-card">
+    <div class="section-label">04 &nbsp; Convert & Download</div>
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <button id="convertBtn" disabled onclick="doConvert()">⚡ Convert to CSV</button>
+      <button id="downloadBtn" onclick="downloadCSV()">⬇ Download CSV</button>
+    </div>
+
+    <div id="previewWrap" class="mt-4">
+      <div class="section-label" style="margin-bottom:0.8rem;">Preview <span class="badge-count" id="previewCount"></span></div>
+      <div class="preview-scroll">
+        <table class="table table-borderless mb-0" id="previewTable">
+          <thead><tr id="previewHead"></tr></thead>
+          <tbody id="previewBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+</div><!-- /wrapper -->
+
+<!-- Auto-detect Modal -->
+<div class="modal fade" id="areaModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">⚡ Auto-detected Areas</h5>
+      </div>
+      <div class="modal-body">
+        <p style="color:var(--muted);font-size:0.85rem;">Unique AREA values found in your file. Set a <code style="color:var(--accent)">pop_id</code> for each.</p>
+        <table class="table table-borderless" id="modalAreaTable" style="font-size:0.85rem;">
+          <thead>
+            <tr>
+              <th style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:0.72rem;background:var(--surface);">AREA</th>
+              <th style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:0.72rem;background:var(--surface);">pop_id</th>
+            </tr>
+          </thead>
+          <tbody id="modalAreaBody"></tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-close-modal" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-save-modal" onclick="applyAutoDetect()">Apply Mapping</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  /* ── State ── */
+  let workbook = null;
+  let rawRows = [];   // [{CUSTOMER ID, NAME, ...}, ...]
+  let csvContent = '';
+
+  const HEADER_MAP = {
+    'CUSTOMER ID': 'ref_id',
+    'NAME':        'full_name',
+    'USERNAME':    'pppoe_user',
+    'PASSWORD':    'pppoe_pass',
+    'PACKAGE':     'package',
+    'EXP DATE':    'validity',
+    'AREA':        'pop_id',
+    'MOBILE':      'mobile',
+    'NID':         'nid',
+    'ADDRESS':     'address',
+    'STATUS':      'locked',
+    'CREATED':     'reg_date',
+  };
+
+  /* ── Drag & Drop ── */
+  const dropZone = document.getElementById('dropZone');
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  });
+  document.getElementById('fileInput').addEventListener('change', e => {
+    if (e.target.files[0]) handleFile(e.target.files[0]);
+  });
+
+  function handleFile(file) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const data = new Uint8Array(ev.target.result);
+      workbook = XLSX.read(data, { type: 'array', cellDates: true });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      rawRows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+      showStatus(`✓ Loaded: ${file.name}  |  ${rawRows.length} rows  |  Sheet: "${workbook.SheetNames[0]}"`);
+      document.getElementById('convertBtn').disabled = false;
+      document.getElementById('autoDetectBtn').disabled = false;
+
+      dropZone.querySelector('h5').textContent = file.name;
+      dropZone.querySelector('p').textContent = `${rawRows.length} rows ready`;
+      dropZone.querySelector('.icon').textContent = '✅';
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function showStatus(msg) {
+    const s = document.getElementById('statusBar');
+    document.getElementById('statusText').textContent = msg;
+    s.classList.add('show');
+  }
+
+  /* ── Area Mapping Table ── */
+  let areaIdCounter = 0;
+  function addAreaRow(name, id) {
+    areaIdCounter++;
+    const tbody = document.getElementById('areaBody');
+    const tr = document.createElement('tr');
+    tr.dataset.rid = areaIdCounter;
+    tr.innerHTML = `
+      <td>
+        <input class="area-name-input" type="text" placeholder="e.g. Mirpur" value="${escHtml(name)}" data-role="aname"/>
+      </td>
+      <td>
+        <span class="area-id-badge">#</span>&nbsp;
+        <input class="area-name-input" type="number" min="1" placeholder="ID" value="${escHtml(id)}" style="width:90px;" data-role="aid"/>
+      </td>
+      <td><button class="btn-del" onclick="this.closest('tr').remove();updateAreaCount();" title="Remove">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+    updateAreaCount();
+  }
+
+  function updateAreaCount() {
+    const n = document.getElementById('areaBody').querySelectorAll('tr').length;
+    document.getElementById('areaCount').textContent = `${n} area${n!==1?'s':''}`;
+  }
+
+  function getAreaMap() {
+    const map = {};
+    document.querySelectorAll('#areaBody tr').forEach(tr => {
+      const name = tr.querySelector('[data-role="aname"]').value.trim();
+      const id   = tr.querySelector('[data-role="aid"]').value.trim();
+      if (name) map[name.toLowerCase()] = id || name;
+    });
+    return map;
+  }
+
+  /* ── Auto-detect ── */
+  function openAutoDetectModal() {
+    if (!rawRows.length) return;
+    const key = Object.keys(rawRows[0]).find(k => k.trim().toUpperCase() === 'AREA') || 'AREA';
+    const unique = [...new Set(rawRows.map(r => String(r[key] || '')).filter(Boolean))].sort();
+
+    const existMap = getAreaMap();
+    const tbody = document.getElementById('modalAreaBody');
+    tbody.innerHTML = '';
+    unique.forEach(area => {
+      const existId = existMap[area.toLowerCase()] || '';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="color:var(--text);padding:6px 8px;">${escHtml(area)}</td>
+        <td style="padding:6px 8px;">
+          <input class="area-name-input" type="number" min="1" placeholder="pop_id" value="${escHtml(existId)}"
+                 data-area="${escHtml(area)}" style="width:100px;"/>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+
+    new bootstrap.Modal(document.getElementById('areaModal')).show();
+  }
+
+  function applyAutoDetect() {
+    document.getElementById('areaBody').innerHTML = '';
+    document.querySelectorAll('#modalAreaBody input').forEach(inp => {
+      addAreaRow(inp.dataset.area, inp.value.trim());
+    });
+    bootstrap.Modal.getInstance(document.getElementById('areaModal')).hide();
+  }
+
+  /* ── Date Formatting ── */
+  const MONTHS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+
+  function parseAnyDate(val) {
+    if (!val && val !== 0) return null;
+
+    // Already a JS Date (from xlsx cellDates:true)
+    if (val instanceof Date) return isNaN(val) ? null : val;
+
+    // Excel serial number (number type)
+    if (typeof val === 'number') {
+      // Excel epoch: Dec 30 1899; handle Lotus bug (serial 60 = Feb 29 1900 doesn't exist)
+      const serial = val > 59 ? val : val;
+      const ms = Math.round((serial - 25569) * 86400 * 1000);
+      const d = new Date(ms);
+      return isNaN(d) ? null : d;
+    }
+
+    const s = String(val).trim();
+    if (!s) return null;
+
+    // Try patterns in priority order
+    let m, d;
+
+    // DD/MM/YY or DD-MM-YY or DD.MM.YY
+    m = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2})$/);
+    if (m) {
+      let yy = +m[3];
+      yy = yy < 30 ? 2000 + yy : 1900 + yy;
+      d = new Date(yy, +m[2]-1, +m[1]);
+      if (!isNaN(d)) return d;
+    }
+
+    // DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
+    m = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
+    if (m) { d = new Date(+m[3], +m[2]-1, +m[1]); if (!isNaN(d)) return d; }
+
+    // YYYY-MM-DD or YYYY/MM/DD
+    m = s.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/);
+    if (m) { d = new Date(+m[1], +m[2]-1, +m[3]); if (!isNaN(d)) return d; }
+
+    // MM/DD/YYYY (US) — only if month part > 12 is impossible, fall back
+    m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m && +m[1] <= 12) { d = new Date(+m[3], +m[1]-1, +m[2]); if (!isNaN(d)) return d; }
+
+    // DD Mon YYYY  or  DD Month YYYY  (e.g. "10 February 2025", "10 Feb 2025")
+    m = s.match(/^(\d{1,2})[- ]([A-Za-z]+)[- ](\d{4})$/);
+    if (m) {
+      const mo = MONTHS.indexOf(m[2].toLowerCase().slice(0,3));
+      if (mo !== -1) { d = new Date(+m[3], mo, +m[1]); if (!isNaN(d)) return d; }
+    }
+
+    // Mon DD, YYYY  (e.g. "Feb 10, 2025")
+    m = s.match(/^([A-Za-z]+)[- ](\d{1,2}),?\s*(\d{4})$/);
+    if (m) {
+      const mo = MONTHS.indexOf(m[1].toLowerCase().slice(0,3));
+      if (mo !== -1) { d = new Date(+m[3], mo, +m[2]); if (!isNaN(d)) return d; }
+    }
+
+    // YYYY MM DD (space separated)
+    m = s.match(/^(\d{4})\s+(\d{1,2})\s+(\d{1,2})$/);
+    if (m) { d = new Date(+m[1], +m[2]-1, +m[3]); if (!isNaN(d)) return d; }
+
+    // Last resort: native Date parse
+    d = new Date(s);
+    return isNaN(d) ? null : d;
+  }
+
+  function formatDate(val) {
+    const d = parseAnyDate(val);
+    if (!d) return String(val ?? '');
+    const day  = d.getDate();                  // no leading zero
+    const mon  = MONTHS[d.getMonth()];         // 'jan','feb',...
+    const year = d.getFullYear();
+    return `${day} ${mon} ${year}`;            // e.g. "10 feb 2025"
+  }
+
+  /* ── Convert ── */
+  function doConvert() {
+    if (!rawRows.length) return;
+    const areaMap = getAreaMap();
+    const outHeaders = Object.values(HEADER_MAP);
+
+    // Find column keys (case-insensitive match)
+    const srcKeys = Object.keys(HEADER_MAP);
+    const colMap = {};  // srcKey -> actual key in rawRows
+    if (rawRows.length > 0) {
+      const firstKey = Object.keys(rawRows[0]);
+      srcKeys.forEach(sk => {
+        const found = firstKey.find(k => k.trim().toUpperCase() === sk.toUpperCase());
+        colMap[sk] = found || sk;
+      });
+    }
+
+    const rows = rawRows.map(row => {
+      return srcKeys.map(sk => {
+        const val = row[colMap[sk]] ?? '';
+        if (sk === 'AREA') {
+          const v = String(val).trim();
+          return areaMap[v.toLowerCase()] !== undefined ? areaMap[v.toLowerCase()] : v;
+        }
+        if (sk === 'EXP DATE' || sk === 'CREATED') {
+          return formatDate(val);
+        }
+        if (sk === 'STATUS') {
+          return '';
+        }
+        const s = String(val);
+        return s.includes(',') || s.includes('"') || s.includes('\n')
+          ? `"${s.replace(/"/g, '""')}"` : s;
+      });
+    });
+
+    // Build CSV
+    const lines = [outHeaders.join(',')];
+    rows.forEach(r => lines.push(r.join(',')));
+    csvContent = lines.join('\r\n');
+
+    // Preview
+    renderPreview(outHeaders, rows.slice(0, 8));
+    document.getElementById('previewWrap').classList.add('show');
+    document.getElementById('previewCount').textContent = `${rows.length} rows`;
+    document.getElementById('downloadBtn').classList.add('show');
+    showStatus(`✓ Converted ${rows.length} rows → ${outHeaders.length} columns`);
+  }
+
+  function renderPreview(headers, rows) {
+    const headTr = document.getElementById('previewHead');
+    headTr.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
+    const tbody = document.getElementById('previewBody');
+    tbody.innerHTML = rows.map(r =>
+      `<tr>${r.map(c => `<td>${escHtml(c)}</td>`).join('')}</tr>`
+    ).join('');
+  }
+
+  /* ── Download ── */
+  function downloadCSV() {
+    if (!csvContent) return;
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = 'customers_converted.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  /* ── Utility ── */
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>
