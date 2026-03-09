@@ -252,9 +252,9 @@
     /* Preview table */
     #previewWrap { display: none; }
     #previewWrap.show { display: block; }
-    .preview-scroll { overflow-x: auto; max-height: 260px; overflow-y: auto; border-radius: 8px; border: 1px solid var(--border); }
-    .preview-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-    .preview-scroll::-webkit-scrollbar-track { background: var(--surface); }
+    .preview-scroll { overflow-x: auto; max-height: 700px; overflow-y: auto; border-radius: 8px; border: 1px solid var(--border); }
+    .preview-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+    .preview-scroll::-webkit-scrollbar-track { background: var(--accent); }
     .preview-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     #previewTable { width: 100%; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; margin: 0; }
     #previewTable thead th {
@@ -273,7 +273,7 @@
       padding: 0.4rem 0.8rem;
       white-space: nowrap;
     }
-    #previewTable tbody tr:hover td { background: rgba(255,255,255,0.025); }
+    #previewTable tbody tr:hover td { background: rgba(132, 148, 137, 0.267); }
 
     /* Download button */
     #downloadBtn {
@@ -346,11 +346,11 @@
 </head>
 <body>
 <div class="wrapper">
-<div class="container" style="max-width:900px; padding:1rem 1rem 4rem;">
+<div class="container" style="max-width:1920px; padding:1rem 1rem 4rem;">
 
   <header>
     <h1>Excel → CSV Converter</h1>
-    <p>ISP Customer Data Transformer</p>
+    <p>MAXIM EXCEL DOWNLOAD FORMAT:</p>
   </header>
 
   <!-- Upload -->
@@ -413,10 +413,9 @@
 
   <!-- Convert -->
   <div class="glass-card">
-    <div class="section-label">04 &nbsp; Convert & Download</div>
+    <div class="section-label">04 &nbsp; Convert & Preview</div>
     <div class="d-flex align-items-center gap-3 flex-wrap">
       <button id="convertBtn" disabled onclick="doConvert()">⚡ Convert to CSV</button>
-      <button id="downloadBtn" onclick="downloadCSV()">⬇ Download CSV</button>
     </div>
 
     <div id="previewWrap" class="mt-4">
@@ -426,6 +425,9 @@
           <thead><tr id="previewHead"></tr></thead>
           <tbody id="previewBody"></tbody>
         </table>
+      </div>
+      <div class="d-flex justify-content-center mt-3">
+        <button id="downloadBtn" onclick="downloadCSV()">⬇ Download CSV</button>
       </div>
     </div>
   </div>
@@ -568,7 +570,7 @@
       const existId = existMap[area.toLowerCase()] || '';
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td style="color:var(--text);padding:6px 8px;">${escHtml(area)}</td>
+        <td style="color:var(--accent);padding:6px 8px;">${escHtml(area)}</td>
         <td style="padding:6px 8px;">
           <input class="area-name-input" type="number" min="1" placeholder="pop_id" value="${escHtml(existId)}"
                  data-area="${escHtml(area)}" style="width:100px;"/>
@@ -706,11 +708,14 @@
     csvContent = lines.join('\r\n');
 
     // Preview
-    renderPreview(outHeaders, rows.slice(0, 8));
+    renderPreview(outHeaders, rows);
     document.getElementById('previewWrap').classList.add('show');
     document.getElementById('previewCount').textContent = `${rows.length} rows`;
     document.getElementById('downloadBtn').classList.add('show');
     showStatus(`✓ Converted ${rows.length} rows → ${outHeaders.length} columns`);
+
+    // Scroll to preview
+    document.getElementById('previewWrap').scrollIntoView({ behavior: 'smooth' });
   }
 
   function renderPreview(headers, rows) {
