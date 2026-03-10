@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ONU Data Table Converter</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg-deep:     #090d14;
+      --bg-panel:    #0d1520;
+      --bg-card:     #111c2b;
+      --accent:      #00e5ff;
+      --accent2:     #00ff99;
+      --warn:        #ffcc00;
+      --danger:      #ff3b5c;
+      --text-main:   #cde8ff;
+      --text-dim:    #4d7a9e;
+      --border:      #1a3050;
+      --glow:        0 0 12px rgba(0,229,255,.35);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg-deep);
+      color: var(--text-main);
+      font-family: 'Exo 2', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* grid background */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app-wrapper { position: relative; z-index: 1; }
+
+    /* ── Header ── */
+    header {
+      padding: 2rem 2rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .header-icon {
+      width: 42px; height: 42px;
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      display: grid; place-items: center;
+      box-shadow: var(--glow);
+    }
+    .header-icon svg { width: 22px; height: 22px; stroke: var(--accent); }
+    header h1 {
+      font-size: 1.4rem; font-weight: 700; letter-spacing: .06em;
+      color: var(--accent);
+      text-shadow: var(--glow);
+    }
+    header span {
+      font-size: .75rem; color: var(--text-dim);
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    /* ── Input area ── */
+    .input-section { padding: 1.5rem 2rem; }
+
+    .panel-label {
+      font-size: .65rem; font-weight: 600; letter-spacing: .15em;
+      color: var(--text-dim); text-transform: uppercase;
+      margin-bottom: .5rem;
+    }
+    .panel-label span { color: var(--accent); }
+
+    #rawInput {
+      width: 100%;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-main);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .78rem;
+      line-height: 1.6;
+      padding: 1rem;
+      resize: vertical;
+      min-height: 180px;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+    #rawInput:focus {
+      border-color: var(--accent);
+      box-shadow: var(--glow);
+    }
+    #rawInput::placeholder { color: var(--text-dim); }
+
+    .btn-convert {
+      background: linear-gradient(135deg, #00b8d9, #00e5ff);
+      color: #060d17;
+      font-family: 'Exo 2', sans-serif;
+      font-weight: 700;
+      letter-spacing: .08em;
+      font-size: .85rem;
+      border: none;
+      border-radius: 8px;
+      padding: .6rem 1.8rem;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(0,229,255,.3);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn-convert:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(0,229,255,.5);
+    }
+    .btn-convert:active { transform: translateY(0); }
+
+    .btn-clear {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      border-radius: 8px;
+      padding: .6rem 1.2rem;
+      font-family: 'Exo 2', sans-serif;
+      font-size: .8rem;
+      cursor: pointer;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-clear:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: flex; gap: 1.5rem; flex-wrap: wrap;
+      padding: .5rem 2rem 1rem;
+    }
+    .stat-chip {
+      display: flex; align-items: center; gap: .5rem;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: .35rem .75rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .75rem;
+    }
+    .stat-chip .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+    }
+    .stat-chip .val { color: var(--accent); font-weight: 600; }
+
+    /* ── Table section ── */
+    .table-section { padding: 0 2rem 3rem; }
+
+    .table-wrapper {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,.4);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .82rem;
+    }
+
+    thead tr {
+      background: var(--bg-panel);
+      border-bottom: 2px solid var(--accent);
+    }
+
+    th {
+      padding: .85rem 1rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .72rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      transition: background .15s;
+    }
+    th:hover { background: rgba(0,229,255,.08); }
+
+    .sort-indicator {
+      display: inline-flex; flex-direction: column;
+      gap: 1px; vertical-align: middle;
+      margin-left: 6px; opacity: .35;
+    }
+    .sort-indicator span {
+      display: block; width: 0; height: 0;
+    }
+    .sort-indicator .up {
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-bottom: 5px solid currentColor;
+    }
+    .sort-indicator .dn {
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 5px solid currentColor;
+    }
+    th.sort-asc  .sort-indicator { opacity: 1; }
+    th.sort-asc  .sort-indicator .up  { color: var(--accent2); }
+    th.sort-asc  .sort-indicator .dn  { color: var(--text-dim); }
+    th.sort-desc .sort-indicator { opacity: 1; }
+    th.sort-desc .sort-indicator .dn  { color: var(--accent2); }
+    th.sort-desc .sort-indicator .up  { color: var(--text-dim); }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background .12s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(0,229,255,.05); }
+
+    td {
+      padding: .7rem 1rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .8rem;
+      color: var(--text-main);
+      white-space: nowrap;
+    }
+
+    td.onu-id {
+      color: var(--accent2);
+      font-weight: 600;
+      letter-spacing: .04em;
+    }
+
+    /* value badges */
+    .badge-val {
+      display: inline-block;
+      padding: .15rem .55rem;
+      border-radius: 4px;
+      font-size: .78rem;
+    }
+    .badge-hot  { background: rgba(255,59,92,.15);  color: #ff6b85; border: 1px solid rgba(255,59,92,.3); }
+    .badge-warn { background: rgba(255,204,0,.12);  color: #ffcc00; border: 1px solid rgba(255,204,0,.25); }
+    .badge-ok   { background: rgba(0,255,153,.08);  color: #00ff99; border: 1px solid rgba(0,255,153,.2); }
+    .badge-low  { background: rgba(0,229,255,.08);  color: #00e5ff; border: 1px solid rgba(0,229,255,.2); }
+    .badge-crit { background: rgba(255,59,92,.25);  color: #ff3b5c; border: 1px solid rgba(255,59,92,.5); }
+
+    /* empty state */
+    .empty-state {
+      text-align: center; padding: 4rem 2rem;
+      color: var(--text-dim);
+    }
+    .empty-state svg { width: 48px; height: 48px; margin-bottom: 1rem; stroke: var(--text-dim); }
+    .empty-state p { font-size: .9rem; }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-deep); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+    @media (max-width: 768px) {
+      header, .input-section, .stats-bar, .table-section { padding-left: 1rem; padding-right: 1rem; }
+      .table-wrapper { overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-wrapper">
+
+  <!-- Header -->
+  <header>
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="2" width="20" height="8" rx="2"/>
+        <rect x="2" y="14" width="20" height="8" rx="2"/>
+        <line x1="6" y1="6" x2="6.01" y2="6"/>
+        <line x1="6" y1="18" x2="6.01" y2="18"/>
+      </svg>
+    </div>
+    <div>
+      <h1>ONU OPTICAL MONITOR</h1>
+      <span>EPON Network Diagnostic · Signal Analyzer</span>
+    </div>
+  </header>
+
+  <!-- Input Section -->
+  <div class="input-section">
+    <div class="panel-label">↳ <span>RAW DATA INPUT</span> — paste ONU diagnostic output below</div>
+    <textarea id="rawInput" placeholder="Paste raw ONU data here (with or without header/separator lines)...
+Example:
+EPON0/4:1   48.87   3.30   11.78   1.95   -15.36
+EPON0/4:2   47.99   3.26   7.74    2.24   -17.28
+..."></textarea>
+    <div class="d-flex gap-2 mt-3 align-items-center">
+      <button class="btn-convert" onclick="convertData()">
+        ⚡ CONVERT TO TABLE
+      </button>
+      <button class="btn-clear" onclick="clearAll()">✕ Clear</button>
+    </div>
+  </div>
+
+  <!-- Stats Bar -->
+  <div class="stats-bar" id="statsBar" style="display:none!important"></div>
+
+  <!-- Table Section -->
+  <div class="table-section">
+    <div id="tableContainer">
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/>
+        </svg>
+        <p>Paste your ONU data above and click <strong style="color:var(--accent)">Convert to Table</strong></p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // ── Pre-fill with sample data ──────────────────────────────────────────────
+  const SAMPLE = `ONU-ID      Temperature(C)    Supply Voltage(V)   TX Bias Current(mA)   TX Power(dBm)   RX Power(dBm)
+------      --------------    -----------------   -------------------   -------------   -------------
+EPON0/4:1   48.87             3.30                11.78                 1.95            -15.36
+EPON0/4:2   47.99             3.26                7.74                  2.24            -17.28
+EPON0/4:3   47.96             3.30                8.90                  1.43            -18.48
+EPON0/4:6   37.00             3.29                14.00                 1.88            -17.83
+EPON0/4:7   36.00             3.33                6.00                  2.20            -18.70
+EPON0/4:8   34.00             3.22                10.00                 2.31            -15.00
+EPON0/4:10  55.90             3.37                10.16                 2.10            -14.21
+EPON0/4:11  40.72             3.26                13.45                 2.30            -18.04
+EPON0/4:13  46.00             3.25                9.00                  2.27            -16.97
+EPON0/4:14  49.00             3.22                9.00                  2.30            -15.42
+EPON0/4:15  47.00             3.22                16.00                 2.37            -14.26
+EPON0/4:16  43.62             3.26                13.75                 1.70            -14.10
+EPON0/4:17  40.00             3.25                20.00                 2.33            -17.93
+EPON0/4:18  39.00             3.34                19.00                 2.29            -17.88
+EPON0/4:19  34.00             3.28                17.00                 2.33            -15.53
+EPON0/4:22  44.00             3.25                21.00                 2.19            -13.85
+EPON0/4:23  44.00             3.23                8.00                  2.05            -19.32
+EPON0/4:24  45.00             3.22                10.00                 2.05            -17.90
+EPON0/4:27  42.00             3.25                10.00                 1.95            -21.94
+EPON0/4:30  47.00             3.26                9.00                  2.03            -17.12
+EPON0/4:31  40.00             3.19                13.00                 2.25            -18.48
+EPON0/4:32  46.00             3.25                12.00                 2.24            -24.69
+EPON0/4:33  38.00             3.33                19.00                 2.18            -20.09
+EPON0/4:37  45.00             3.26                13.00                 2.03            -30.97
+EPON0/4:38  45.00             3.22                7.00                  1.97            -18.70
+EPON0/4:39  45.00             3.23                9.00                  2.26            -17.42
+EPON0/4:40  47.00             3.36                16.00                 2.20            -18.42
+EPON0/4:41  47.00             3.25                12.00                 2.28            -17.62
+EPON0/4:43  47.00             3.30                11.00                 1.92            -16.31
+EPON0/4:44  41.00             3.30                10.00                 2.11            -26.20
+EPON0/4:45  43.00             3.28                11.00                 2.04            -18.57
+EPON0/4:46  49.00             3.27                9.00                  2.11            -20.04
+EPON0/4:47  33.00             3.26                18.00                 2.12            -19.87
+EPON0/4:50  50.00             3.23                15.00                 2.18            -26.02
+EPON0/4:53  37.29             3.25                12.95                 2.46            -30.97
+EPON0/4:54  37.61             3.26                18.35                 2.44            -26.02
+EPON0/4:55  43.00             3.21                14.00                 2.32            -17.47
+EPON0/4:57  38.00             3.34                17.00                 2.22            -28.54
+EPON0/4:58  47.00             3.22                11.00                 2.03            -26.20
+EPON0/4:59  33.00             3.29                15.00                 1.89            -25.53
+EPON0/4:60  45.00             3.26                11.00                 2.14            -17.80
+EPON0/4:61  50.00             3.27                8.00                  2.14            -23.57
+EPON0/4:62  42.00             3.30                10.00                 2.32            -27.96
+EPON0/4:63  42.00             3.32                9.00                  1.85            -21.74
+EPON0/4:64  44.00             3.26                10.00                 2.03            -21.37
+EPON0/4:65  45.00             3.37                19.00                 2.17            -13.26
+EPON0/4:66  43.98             3.21                15.60                 2.66            -27.70
+EPON0/4:69  43.63             3.21                12.80                 2.69            -17.01`;
+
+  document.getElementById('rawInput').value = SAMPLE;
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let tableData   = [];
+  let sortCol     = null;
+  let sortDir     = 'asc';
+
+  const COLS = [
+    { key: 'id',      label: 'ONU-ID',                  type: 'str' },
+    { key: 'temp',    label: 'Temp (°C)',                type: 'num' },
+    { key: 'volt',    label: 'Voltage (V)',              type: 'num' },
+    { key: 'bias',    label: 'TX Bias (mA)',             type: 'num' },
+    { key: 'txpow',   label: 'TX Power (dBm)',           type: 'num' },
+    { key: 'rxpow',   label: 'RX Power (dBm)',           type: 'num' },
+  ];
+
+  // ── Parse ──────────────────────────────────────────────────────────────────
+  function parseRaw(raw) {
+    const rows = [];
+    const lines = raw.split('\n');
+    for (const line of lines) {
+      const t = line.trim();
+      if (!t) continue;
+      if (t.startsWith('ONU-ID') || t.startsWith('---') || t.startsWith('======')) continue;
+
+      // split on 2+ spaces
+      const parts = t.split(/\s{2,}/).map(s => s.trim()).filter(Boolean);
+      if (parts.length < 6) continue;
+      if (!parts[0].toUpperCase().startsWith('EPON')) continue;
+
+      rows.push({
+        id:    parts[0],
+        temp:  parseFloat(parts[1]),
+        volt:  parseFloat(parts[2]),
+        bias:  parseFloat(parts[3]),
+        txpow: parseFloat(parts[4]),
+        rxpow: parseFloat(parts[5]),
+      });
+    }
+    return rows;
+  }
+
+  // ── Convert ────────────────────────────────────────────────────────────────
+  function convertData() {
+    const raw = document.getElementById('rawInput').value;
+    const parsed = parseRaw(raw);
+    if (!parsed.length) {
+      alert('⚠ No valid ONU data found. Make sure rows start with EPON and have 6 space-separated columns.');
+      return;
+    }
+    tableData = parsed;
+    sortCol = null; sortDir = 'asc';
+    renderTable();
+    renderStats();
+  }
+
+  function clearAll() {
+    document.getElementById('rawInput').value = '';
+    tableData = [];
+    document.getElementById('tableContainer').innerHTML = `
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/>
+        </svg>
+        <p>Paste your ONU data above and click <strong style="color:var(--accent)">Convert to Table</strong></p>
+      </div>`;
+    document.getElementById('statsBar').style.setProperty('display','none','important');
+  }
+
+  // ── Sort ───────────────────────────────────────────────────────────────────
+  function sortBy(key) {
+    if (sortCol === key) {
+      sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortCol = key; sortDir = 'asc';
+    }
+    renderTable();
+  }
+
+  function getSorted() {
+    if (!sortCol) return [...tableData];
+    const col = COLS.find(c => c.key === sortCol);
+    return [...tableData].sort((a, b) => {
+      let va = a[sortCol], vb = b[sortCol];
+      let cmp = col.type === 'num' ? va - vb : va.localeCompare(vb);
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }
+
+  // ── Badge helpers ──────────────────────────────────────────────────────────
+  function tempBadge(v) {
+    if (v >= 55) return `<span class="badge-val badge-crit">${v.toFixed(2)}</span>`;
+    if (v >= 50) return `<span class="badge-val badge-hot">${v.toFixed(2)}</span>`;
+    if (v >= 45) return `<span class="badge-val badge-warn">${v.toFixed(2)}</span>`;
+    return `<span class="badge-val badge-ok">${v.toFixed(2)}</span>`;
+  }
+  function voltBadge(v) {
+    if (v < 3.20 || v > 3.40) return `<span class="badge-val badge-warn">${v.toFixed(2)}</span>`;
+    return `<span class="badge-val badge-ok">${v.toFixed(2)}</span>`;
+  }
+  function rxBadge(v) {
+    if (v <= -30) return `<span class="badge-val badge-crit">${v.toFixed(2)}</span>`;
+    if (v <= -26) return `<span class="badge-val badge-hot">${v.toFixed(2)}</span>`;
+    if (v <= -22) return `<span class="badge-val badge-warn">${v.toFixed(2)}</span>`;
+    return `<span class="badge-val badge-ok">${v.toFixed(2)}</span>`;
+  }
+
+  // ── Render Table ───────────────────────────────────────────────────────────
+  function renderTable() {
+    const rows = getSorted();
+
+    let html = `
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>`;
+
+    COLS.forEach(col => {
+      const cls = sortCol === col.key ? (sortDir === 'asc' ? 'sort-asc' : 'sort-desc') : '';
+      html += `
+              <th class="${cls}" onclick="sortBy('${col.key}')">
+                ${col.label}
+                <span class="sort-indicator">
+                  <span class="up"></span>
+                  <span class="dn"></span>
+                </span>
+              </th>`;
+    });
+
+    html += `
+            </tr>
+          </thead>
+          <tbody>`;
+
+    rows.forEach(r => {
+      html += `
+            <tr>
+              <td class="onu-id">${r.id}</td>
+              <td>${tempBadge(r.temp)}</td>
+              <td>${voltBadge(r.volt)}</td>
+              <td><span class="badge-val badge-low">${r.bias.toFixed(2)}</span></td>
+              <td>${r.txpow.toFixed(2)}</td>
+              <td>${rxBadge(r.rxpow)}</td>
+            </tr>`;
+    });
+
+    html += `
+          </tbody>
+        </table>
+      </div>`;
+
+    document.getElementById('tableContainer').innerHTML = html;
+  }
+
+  // ── Render Stats ───────────────────────────────────────────────────────────
+  function renderStats() {
+    const bar = document.getElementById('statsBar');
+    bar.style.removeProperty('display');
+
+    const temps  = tableData.map(r => r.temp);
+    const rxpows = tableData.map(r => r.rxpow);
+    const hotCount  = temps.filter(t => t >= 50).length;
+    const weakCount = rxpows.filter(r => r <= -26).length;
+
+    bar.innerHTML = `
+      <div class="stat-chip">
+        <span class="dot" style="background:var(--accent2)"></span>
+        Total ONUs: <span class="val">${tableData.length}</span>
+      </div>
+      <div class="stat-chip">
+        <span class="dot" style="background:var(--warn)"></span>
+        High Temp ≥50°C: <span class="val" style="color:var(--warn)">${hotCount}</span>
+      </div>
+      <div class="stat-chip">
+        <span class="dot" style="background:var(--danger)"></span>
+        Weak RX ≤−26dBm: <span class="val" style="color:var(--danger)">${weakCount}</span>
+      </div>
+      <div class="stat-chip">
+        <span class="dot" style="background:var(--accent)"></span>
+        Avg Temp: <span class="val">${(temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1)} °C</span>
+      </div>
+      <div class="stat-chip">
+        <span class="dot" style="background:var(--accent)"></span>
+        Avg RX: <span class="val">${(rxpows.reduce((a,b)=>a+b,0)/rxpows.length).toFixed(2)} dBm</span>
+      </div>`;
+  }
+</script>
+</body>
+</html>

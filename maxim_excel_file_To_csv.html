@@ -9,16 +9,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     :root {
-      --bg: #0b0f1a;
-      --surface: #111827;
-      --card: #161d2f;
-      --accent: #00e5ff;
-      --accent2: #7c3aed;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --card: #ffffff;
+      --accent: #2563eb;
+      --accent2: #1d4ed8;
       --success: #10b981;
       --warning: #f59e0b;
-      --text: #e2e8f0;
-      --muted: #64748b;
-      --border: #1e2d45;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
     }
 
     * { box-sizing: border-box; }
@@ -30,19 +30,6 @@
       min-height: 100vh;
       margin: 0;
       overflow-x: hidden;
-    }
-
-    /* Grid background */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-      z-index: 0;
     }
 
     .wrapper { position: relative; z-index: 1; }
@@ -74,10 +61,10 @@
     .glass-card {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 12px;
       padding: 1.8rem;
       margin-bottom: 1.5rem;
-      box-shadow: 0 4px 32px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 
     .section-label {
@@ -98,31 +85,6 @@
       background: var(--border);
     }
 
-    /* Drop zone */
-    #dropZone {
-      border: 2px dashed var(--border);
-      border-radius: 12px;
-      padding: 3rem 2rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      background: rgba(0,229,255,0.02);
-      position: relative;
-    }
-    #dropZone:hover, #dropZone.dragover {
-      border-color: var(--accent);
-      background: rgba(0,229,255,0.06);
-      box-shadow: 0 0 30px rgba(0,229,255,0.1);
-    }
-    #dropZone .icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-      display: block;
-    }
-    #dropZone h5 { font-weight: 700; margin-bottom: 0.4rem; }
-    #dropZone p { color: var(--muted); font-size: 0.85rem; margin: 0; }
-    #fileInput { display: none; }
-
     /* Area mapping table */
     #areaTable th {
       background: var(--surface);
@@ -130,16 +92,22 @@
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.75rem;
       letter-spacing: 1px;
-      padding: 0.75rem 1rem;
+      padding: 0.75rem 2.5px 0.75rem 15px;
       border-color: var(--border);
       font-weight: 400;
+    }
+    #areaTable th:last-child {
+      padding: 0.75rem 15px 0.75rem 2.5px;
     }
     #areaTable td {
       background: transparent;
       color: var(--text);
       border-color: var(--border);
-      padding: 0.6rem 1rem;
+      padding: 0.6rem 2.5px 0.6rem 15px;
       vertical-align: middle;
+    }
+    #areaTable td:last-child {
+      padding: 0.6rem 15px 0.6rem 2.5px;
     }
     #areaTable tr:hover td { background: rgba(255,255,255,0.02); }
     .area-name-input {
@@ -228,20 +196,20 @@
 
     /* Convert button */
     #convertBtn {
-      background: linear-gradient(135deg, var(--accent), #0099bb);
-      color: #000;
-      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #ffffff;
+      font-weight: 600;
       font-size: 1rem;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       border: none;
-      border-radius: 10px;
-      padding: 0.85rem 2.5rem;
-      transition: all 0.25s;
-      box-shadow: 0 4px 20px rgba(0,229,255,0.3);
+      border-radius: 8px;
+      padding: 0.75rem 2rem;
+      transition: all 0.2s;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
     }
     #convertBtn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(0,229,255,0.45);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
     #convertBtn:disabled {
       opacity: 0.4;
@@ -252,7 +220,7 @@
     /* Preview table */
     #previewWrap { display: none; }
     #previewWrap.show { display: block; }
-    .preview-scroll { overflow-x: auto; max-height: 700px; overflow-y: auto; border-radius: 8px; border: 1px solid var(--border); }
+    .preview-scroll { overflow-x: auto; max-height: 500px; overflow-y: auto; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); }
     .preview-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
     .preview-scroll::-webkit-scrollbar-track { background: var(--accent); }
     .preview-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -279,27 +247,28 @@
     #downloadBtn {
       background: linear-gradient(135deg, var(--success), #059669);
       color: #fff;
-      font-weight: 700;
+      font-weight: 600;
       border: none;
-      border-radius: 10px;
+      border-radius: 8px;
       padding: 0.75rem 2rem;
       font-size: 0.95rem;
-      transition: all 0.25s;
-      box-shadow: 0 4px 16px rgba(16,185,129,0.3);
+      transition: all 0.2s;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
       display: none;
     }
     #downloadBtn.show { display: inline-block; }
     #downloadBtn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 28px rgba(16,185,129,0.45);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 
     /* Modal overrides */
     .modal-content {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 12px;
       color: var(--text);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
     .modal-header {
       border-bottom: 1px solid var(--border);
@@ -349,19 +318,21 @@
 <div class="container" style="max-width:1920px; padding:1rem 1rem 4rem;">
 
   <header>
+    
     <h1>Excel → CSV Converter</h1>
     <p>MAXIM EXCEL DOWNLOAD FORMAT: Customer_id,Name,Username,Password,Package,Exp_Date,Area,Mobile,NID,Address,Status,Created</p>
+    <button onclick="copyToClipboard()" style="position:absolute;right:1rem;top:2rem;background:var(--accent);color:#fff;border:none;border-radius:6px;padding:0.5rem 1rem;font-size:0.85rem;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">📋 Copy Format</button>
   </header>
+
+  <!-- Toast Notification -->
+  <div id="toast" style="position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--success);color:#fff;padding:1rem 2rem;border-radius:8px;font-size:0.9rem;z-index:1000;display:none;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+    ✅ Format copied to clipboard!
+  </div>
 
   <!-- Upload -->
   <div class="glass-card">
     <div class="section-label">01 &nbsp; Upload Excel File</div>
-    <div id="dropZone" onclick="document.getElementById('fileInput').click()">
-      <span class="icon">📂</span>
-      <h5>Drop your Excel file here</h5>
-      <p>Supports .xlsx / .xls — click or drag & drop</p>
-      <input type="file" id="fileInput" accept=".xlsx,.xls"/>
-    </div>
+    <input type="file" id="fileInput" accept=".xlsx,.xls" class="form-control"/>
     <div id="statusBar" class="mt-3">
       <span class="dot"></span>
       <span id="statusText">File loaded</span>
@@ -392,6 +363,7 @@
     <div class="d-flex gap-2 flex-wrap">
       <button class="btn-add-area" onclick="addAreaRow('','')">+ Add Area Mapping</button>
       <button class="btn-add-area" onclick="openAutoDetectModal()" id="autoDetectBtn" disabled>⚡ Auto-detect from file</button>
+      <button id="convertBtn" disabled onclick="doConvert()">⚡ Convert to CSV</button>
     </div>
   </div>
 
@@ -413,11 +385,7 @@
 
   <!-- Convert -->
   <div class="glass-card">
-    <div class="section-label">04 &nbsp; Convert & Preview</div>
-    <div class="d-flex align-items-center gap-3 flex-wrap">
-      <button id="convertBtn" disabled onclick="doConvert()">⚡ Convert to CSV</button>
-    </div>
-
+    <div class="section-label">04 &nbsp; Preview & Download</div>
     <div id="previewWrap" class="mt-4">
       <div class="section-label" style="margin-bottom:0.8rem;">Preview <span class="badge-count" id="previewCount"></span></div>
       <div class="preview-scroll">
@@ -484,14 +452,6 @@
     'CREATED':     'reg_date',
   };
 
-  /* ── Drag & Drop ── */
-  const dropZone = document.getElementById('dropZone');
-  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
-  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-  dropZone.addEventListener('drop', e => {
-    e.preventDefault(); dropZone.classList.remove('dragover');
-    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
-  });
   document.getElementById('fileInput').addEventListener('change', e => {
     if (e.target.files[0]) handleFile(e.target.files[0]);
   });
@@ -507,10 +467,6 @@
       showStatus(`✓ Loaded: ${file.name}  |  ${rawRows.length} rows  |  Sheet: "${workbook.SheetNames[0]}"`);
       document.getElementById('convertBtn').disabled = false;
       document.getElementById('autoDetectBtn').disabled = false;
-
-      dropZone.querySelector('h5').textContent = file.name;
-      dropZone.querySelector('p').textContent = `${rawRows.length} rows ready`;
-      dropZone.querySelector('.icon').textContent = '✅';
     };
     reader.readAsArrayBuffer(file);
   }
@@ -570,8 +526,8 @@
       const existId = existMap[area.toLowerCase()] || '';
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td style="color:var(--accent);padding:6px 8px;">${escHtml(area)}</td>
-        <td style="padding:6px 8px;">
+        <td style="color:var(--accent);padding:6px 4px 6px 8px;">${escHtml(area)}</td>
+        <td style="padding:6px 8px 6px 4px;">
           <input class="area-name-input" type="number" min="1" placeholder="pop_id" value="${escHtml(existId)}"
                  data-area="${escHtml(area)}" style="width:100px;"/>
         </td>`;
@@ -743,6 +699,23 @@
   /* ── Utility ── */
   function escHtml(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function copyToClipboard() {
+    const text = 'Customer_id,Name,Username,Password,Package,Exp_Date,Area,Mobile,NID,Address,Status,Created';
+    navigator.clipboard.writeText(text).then(() => {
+      showToast();
+    }).catch(err => {
+      console.error('Failed to copy: ', err);
+    });
+  }
+
+  function showToast() {
+    const toast = document.getElementById('toast');
+    toast.style.display = 'block';
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 3000);
   }
 </script>
 </body>
