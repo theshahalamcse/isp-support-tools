@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Face Alive</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:     #07090e;
+  --card:   #0d1018;
+  --border: #1a2030;
+  --cyan:   #00d4ff;
+  --cyan2:  #00ffcc;
+  --red:    #ff4466;
+  --text:   #c8d4e0;
+  --muted:  #384555;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  font-family: 'Outfit', sans-serif;
+  color: var(--text);
+  overflow: hidden;
+  cursor: none;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.02) 1px, transparent 1px);
+  background-size: 52px 52px;
+}
+
+/* ── CURSOR ── */
+#cur  { position:fixed; width:10px; height:10px; border-radius:50%; background:var(--cyan);
+        pointer-events:none; z-index:9999; transform:translate(-50%,-50%);
+        box-shadow:0 0 10px var(--cyan),0 0 20px rgba(0,212,255,.3); }
+#curR { position:fixed; width:30px; height:30px; border-radius:50%;
+        border:1px solid rgba(0,212,255,.3); pointer-events:none; z-index:9998;
+        transform:translate(-50%,-50%); }
+
+/* ══════════════════════════
+   UPLOAD SCREEN
+══════════════════════════ */
+#uploadScreen {
+  position:fixed; inset:0;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:26px; padding:32px; z-index:50;
+}
+.logo { font-size:clamp(2.8rem,8vw,5rem); font-weight:900;
+        letter-spacing:-.02em; line-height:1; text-align:center; }
+.logo em { font-style:normal;
+           background:linear-gradient(120deg,var(--cyan),var(--cyan2));
+           -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+           background-clip:text; }
+.tag { font-size:.72rem; font-weight:300; letter-spacing:.22em;
+       text-transform:uppercase; color:var(--muted); }
+.ubox {
+  width:min(320px,88vw); height:210px;
+  border-radius:16px; border:1.5px dashed var(--border);
+  background:var(--card);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:11px;
+  cursor:none; transition:border-color .25s,box-shadow .25s;
+}
+.ubox:hover { border-color:var(--cyan); box-shadow:0 0 26px rgba(0,212,255,.08); }
+.ubox p { font-size:.78rem; color:var(--muted); text-align:center; line-height:1.6; }
+.ubox strong { color:var(--cyan); font-weight:600; }
+#fileInput { display:none; }
+.pills { display:flex; gap:9px; flex-wrap:wrap; justify-content:center; }
+.pill { background:var(--card); border:1px solid var(--border); border-radius:20px;
+        padding:5px 13px; font-size:.68rem; font-weight:500; letter-spacing:.04em;
+        color:var(--muted); display:flex; align-items:center; gap:5px; }
+.dot  { width:5px; height:5px; border-radius:50%; background:var(--cyan);
+        box-shadow:0 0 5px var(--cyan); }
+
+/* ══════════════════════════
+   ANIMATOR SCREEN
+══════════════════════════ */
+#animScreen {
+  position:fixed; inset:0;
+  display:none; align-items:center; justify-content:center; z-index:10;
+}
+
+/* Stage: exact image size, centered */
+#stage { position:relative; }
+
+/* faceWrap: the thing that actually rotates.
+   Image + eyeCanvas live here so they move together. */
+#faceWrap {
+  position:relative;
+  transform-style:preserve-3d;
+  will-change:transform;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow: 0 0 0 1px var(--border), 0 0 60px rgba(0,0,0,.9),
+              0 0 100px rgba(0,212,255,.05);
+}
+#faceImg {
+  display:block;
+  /* exact WxH set by JS — no object-fit, no cropping */
+  user-select:none; pointer-events:none; -webkit-user-drag:none;
+}
+/* Canvas lives INSIDE faceWrap → rotates with the image */
+#eyeCanvas {
+  position:absolute; top:0; left:0;
+  pointer-events:none; z-index:5;
+}
+
+/* ── OVERLAY BUTTONS (outside faceWrap, don't rotate) ── */
+.obtn {
+  position:absolute; z-index:30;
+  background:rgba(7,9,14,.85); backdrop-filter:blur(10px);
+  border:1px solid var(--border); border-radius:8px;
+  color:var(--muted); font-family:'Outfit',sans-serif;
+  font-size:.67rem; font-weight:600; letter-spacing:.07em;
+  padding:7px 13px; cursor:none;
+  transition:border-color .2s, color .2s, background .2s;
+}
+.obtn:hover { border-color:var(--cyan); color:var(--cyan); }
+#resetBtn  { top:12px; left:12px; }
+#eyeToggle { top:12px; right:12px; }
+
+/* BLINK BUTTON — big, obvious, bottom center */
+#blinkBtn {
+  position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+  z-index:30;
+  background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(0,255,204,.1));
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(0,212,255,.4); border-radius:40px;
+  color:var(--cyan); font-family:'Outfit',sans-serif;
+  font-size:.75rem; font-weight:700; letter-spacing:.12em;
+  padding:10px 28px; cursor:none;
+  transition:background .2s, border-color .2s, transform .1s;
+  white-space:nowrap;
+  box-shadow:0 0 20px rgba(0,212,255,.1);
+}
+#blinkBtn:hover  { background:linear-gradient(135deg,rgba(0,212,255,.25),rgba(0,255,204,.18));
+                   border-color:var(--cyan2); box-shadow:0 0 30px rgba(0,212,255,.2); }
+#blinkBtn:active { transform:translateX(-50%) scale(.96); }
+
+/* Direction label */
+#dirBadge {
+  position:absolute; bottom:58px; left:50%; transform:translateX(-50%);
+  z-index:30; display:flex; align-items:center; gap:7px;
+  background:rgba(7,9,14,.75); backdrop-filter:blur(8px);
+  border:1px solid var(--border); border-radius:20px;
+  padding:5px 14px; pointer-events:none; white-space:nowrap;
+}
+.da { font-size:.85rem; opacity:.18; transition:opacity .15s,color .15s; }
+.da.on { opacity:1; color:var(--cyan); filter:drop-shadow(0 0 4px var(--cyan)); }
+.dl { font-size:.58rem; font-weight:700; letter-spacing:.16em;
+      text-transform:uppercase; color:var(--muted); min-width:50px; text-align:center; }
+
+/* ══════════════════════════
+   EYE SETUP PANEL
+══════════════════════════ */
+#eyePanel {
+  position:absolute; top:46px; right:12px; z-index:40;
+  background:rgba(5,8,13,.97); border:1px solid var(--border);
+  border-radius:12px; padding:14px 16px; width:230px;
+  display:none; backdrop-filter:blur(16px);
+}
+#eyePanel.open { display:block; }
+#eyePanel h4 {
+  font-size:.7rem; font-weight:700; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--cyan); margin-bottom:12px;
+}
+
+/* Click-to-place section */
+.ep-section {
+  background:rgba(0,212,255,.05); border:1px solid rgba(0,212,255,.15);
+  border-radius:8px; padding:10px 12px; margin-bottom:12px;
+}
+.ep-section p {
+  font-size:.63rem; color:var(--muted); line-height:1.6; margin-bottom:8px;
+}
+.ep-section strong { color:var(--cyan2); }
+
+/* Place buttons */
+.place-row { display:flex; gap:6px; }
+.pbtn {
+  flex:1; padding:7px 0; font-family:'Outfit',sans-serif;
+  font-size:.62rem; font-weight:700; letter-spacing:.07em;
+  border-radius:7px; cursor:none; transition:all .2s;
+}
+.pbtn.left  { background:rgba(0,212,255,.1); border:1px solid rgba(0,212,255,.3); color:var(--cyan); }
+.pbtn.right { background:rgba(0,255,204,.08); border:1px solid rgba(0,255,204,.25); color:var(--cyan2); }
+.pbtn:hover { filter:brightness(1.3); }
+.pbtn.active { filter:brightness(1.5); box-shadow:0 0 10px currentColor; }
+
+/* Fine-tune sliders */
+.ep-fine { margin-top:10px; }
+.ep-fine summary {
+  font-size:.63rem; font-weight:600; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--muted); cursor:none;
+  padding:4px 0; user-select:none;
+}
+.ep-fine summary:hover { color:var(--text); }
+.slrow {
+  display:grid; grid-template-columns:1fr auto;
+  align-items:center; gap:8px;
+  margin-top:7px; font-size:.61rem; color:var(--muted);
+}
+.slrow input[type=range] { width:100%; accent-color:var(--cyan); grid-column:1/-1; margin-top:2px; }
+.slval { color:var(--cyan2); font-size:.63rem; }
+
+/* Placement hint overlay on image */
+#placeHint {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  z-index:50; pointer-events:none;
+  background:rgba(0,0,0,.7); border:1px solid var(--cyan);
+  border-radius:10px; padding:10px 18px;
+  font-size:.72rem; color:var(--cyan); text-align:center; line-height:1.6;
+  display:none; white-space:nowrap;
+}
+#placeHint.show { display:block; }
+
+/* Eye dot markers on canvas */
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="curR"></div>
+
+<!-- ══ UPLOAD ══ -->
+<div id="uploadScreen">
+  <div class="logo">FACE<br><em>ALIVE</em></div>
+  <p class="tag">Upload · Animate · Blink</p>
+  <div class="ubox" id="uploadBox">
+    <span style="font-size:2rem">🖼️</span>
+    <p><strong>Click or drag & drop</strong><br>your portrait photo here</p>
+  </div>
+  <input type="file" id="fileInput" accept="image/*">
+  <div class="pills">
+    <div class="pill"><div class="dot"></div>Turns left / right</div>
+    <div class="pill"><div class="dot"></div>Straight at center</div>
+    <div class="pill"><div class="dot"></div>Eyes blink button</div>
+  </div>
+</div>
+
+<!-- ══ ANIMATOR ══ -->
+<div id="animScreen">
+  <div id="stage">
+
+    <!-- faceWrap rotates as one unit -->
+    <div id="faceWrap">
+      <img id="faceImg" src="" alt="">
+      <canvas id="eyeCanvas"></canvas>
+    </div>
+
+    <!-- outside faceWrap — don't rotate -->
+    <button class="obtn" id="resetBtn"  onclick="resetApp()">← New Photo</button>
+    <button class="obtn" id="eyeToggle" onclick="toggleEyes()">👁 Set Eyes</button>
+
+    <div id="dirBadge">
+      <span class="da" id="arrL">◀</span>
+      <span class="dl" id="dirLbl">STRAIGHT</span>
+      <span class="da" id="arrR">▶</span>
+    </div>
+
+    <!-- BLINK BUTTON -->
+    <button id="blinkBtn" onclick="triggerBlink()">👁 BLINK</button>
+
+    <!-- placement hint -->
+    <div id="placeHint"></div>
+
+    <!-- Eye setup panel -->
+    <div id="eyePanel">
+      <h4>👁 Eye Setup</h4>
+
+      <div class="ep-section">
+        <p>Click <strong>Place Left Eye</strong>, then click on the left eye in the photo. Repeat for right eye.</p>
+        <div class="place-row">
+          <button class="pbtn left"  id="btnPlaceL" onclick="startPlace('left')">Place Left</button>
+          <button class="pbtn right" id="btnPlaceR" onclick="startPlace('right')">Place Right</button>
+        </div>
+      </div>
+
+      <details class="ep-fine" open>
+        <summary>Fine Tune</summary>
+
+        <div class="slrow">
+          <span>Left Eye X%</span><span class="slval" id="v_lex">27</span>
+          <input type="range" min="0" max="50" value="27" id="s_lex" oninput="slSync('lex')">
+        </div>
+        <div class="slrow">
+          <span>Left Eye Y%</span><span class="slval" id="v_ley">36</span>
+          <input type="range" min="0" max="100" value="36" id="s_ley" oninput="slSync('ley')">
+        </div>
+        <div class="slrow">
+          <span>Right Eye X%</span><span class="slval" id="v_rex">73</span>
+          <input type="range" min="50" max="100" value="73" id="s_rex" oninput="slSync('rex')">
+        </div>
+        <div class="slrow">
+          <span>Right Eye Y%</span><span class="slval" id="v_rey">36</span>
+          <input type="range" min="0" max="100" value="36" id="s_rey" oninput="slSync('rey')">
+        </div>
+        <div class="slrow">
+          <span>Eye Width%</span><span class="slval" id="v_ew">16</span>
+          <input type="range" min="2" max="40" value="16" id="s_ew" oninput="slSync('ew')">
+        </div>
+        <div class="slrow">
+          <span>Eye Height%</span><span class="slval" id="v_eh">6</span>
+          <input type="range" min="1" max="20" value="6" id="s_eh" oninput="slSync('eh')">
+        </div>
+      </details>
+    </div>
+
+  </div><!-- #stage -->
+</div>
+
+<script>
+'use strict';
+
+// ══════════════════════════════════
+//  CURSOR
+// ══════════════════════════════════
+const $c = document.getElementById('cur');
+const $r = document.getElementById('curR');
+let cx=-200,cy=-200,rx=-200,ry=-200;
+document.addEventListener('mousemove', e=>{ cx=e.clientX; cy=e.clientY; });
+(function cl(){
+  rx+=(cx-rx)*0.13; ry+=(cy-ry)*0.13;
+  $c.style.left=cx+'px'; $c.style.top=cy+'px';
+  $r.style.left=rx+'px'; $r.style.top=ry+'px';
+  requestAnimationFrame(cl);
+})();
+
+// ══════════════════════════════════
+//  UPLOAD
+// ══════════════════════════════════
+const $box = document.getElementById('uploadBox');
+const $fi  = document.getElementById('fileInput');
+$box.addEventListener('click', ()=>$fi.click());
+$box.addEventListener('dragover',  e=>{ e.preventDefault(); $box.style.borderColor='var(--cyan)'; });
+$box.addEventListener('dragleave', ()=>{ $box.style.borderColor=''; });
+$box.addEventListener('drop', e=>{
+  e.preventDefault(); $box.style.borderColor='';
+  const f=e.dataTransfer.files[0];
+  if(f&&f.type.startsWith('image/')) readFile(f);
+});
+$fi.addEventListener('change', e=>{ if(e.target.files[0]) readFile(e.target.files[0]); });
+function readFile(f){ const r=new FileReader(); r.onload=ev=>boot(ev.target.result); r.readAsDataURL(f); }
+
+// ══════════════════════════════════
+//  BOOT — size everything to image
+// ══════════════════════════════════
+let SW=0, SH=0, rafId=null;
+
+function boot(src){
+  const tmp=new Image();
+  tmp.onload=()=>{
+    // Scale to fit, never upscale beyond natural size
+    const maxW=Math.min(window.innerWidth*0.86, 600);
+    const maxH=window.innerHeight*0.84;
+    const sc=Math.min(maxW/tmp.naturalWidth, maxH/tmp.naturalHeight, 1);
+    SW=Math.round(tmp.naturalWidth*sc);
+    SH=Math.round(tmp.naturalHeight*sc);
+
+    // Stage
+    const $stage=document.getElementById('stage');
+    $stage.style.width=SW+'px'; $stage.style.height=SH+'px';
+
+    // faceWrap
+    const $wrap=document.getElementById('faceWrap');
+    $wrap.style.width=SW+'px'; $wrap.style.height=SH+'px';
+
+    // Image — exact pixels, NO object-fit
+    const $img=document.getElementById('faceImg');
+    $img.src=src;
+    $img.style.width=SW+'px'; $img.style.height=SH+'px';
+
+    // Canvas — same exact pixels
+    const $cv=document.getElementById('eyeCanvas');
+    $cv.width=SW; $cv.height=SH;
+    $cv.style.width=SW+'px'; $cv.style.height=SH+'px';
+
+    // Make eyeCanvas clickable for placement
+    $cv.style.pointerEvents='auto';
+    $cv.style.cursor='none';
+
+    document.getElementById('uploadScreen').style.display='none';
+    document.getElementById('animScreen').style.display='flex';
+
+    if(rafId) cancelAnimationFrame(rafId);
+    startLoop();
+  };
+  tmp.src=src;
+}
+
+function resetApp(){
+  if(rafId) cancelAnimationFrame(rafId);
+  placingMode=null;
+  document.getElementById('animScreen').style.display='none';
+  document.getElementById('uploadScreen').style.display='flex';
+  $fi.value='';
+  mouseNX=smX=0.5;
+}
+
+// ══════════════════════════════════
+//  MOUSE
+// ══════════════════════════════════
+let mouseNX=0.5, mouseNY=0.5;
+document.addEventListener('mousemove', e=>{
+  mouseNX=e.clientX/window.innerWidth;
+  mouseNY=e.clientY/window.innerHeight;
+});
+document.addEventListener('touchmove', e=>{
+  mouseNX=e.touches[0].clientX/window.innerWidth;
+  mouseNY=e.touches[0].clientY/window.innerHeight;
+},{passive:true});
+
+// ══════════════════════════════════
+//  BLINK STATE MACHINE
+//  Phase: 0=open  1=closing  2=hold  3=opening
+// ══════════════════════════════════
+let bPhase=0, bFrame=0;
+const BC=6, BH=2, BO=8;
+let blinkAccum=0, autoT=0;
+const AUTO_BLINK=210; // ~3.5s
+
+// External trigger (button click or mouse-movement)
+function triggerBlink(){
+  if(bPhase===0){ bPhase=1; bFrame=0; }
+}
+
+// ══════════════════════════════════
+//  MAIN LOOP
+// ══════════════════════════════════
+let smX=0.5, smY=0.5, prevSmX=0.5;
+const $wrap2 = ()=>document.getElementById('faceWrap');
+const $arrL  = document.getElementById('arrL');
+const $arrR  = document.getElementById('arrR');
+const $dl    = document.getElementById('dirLbl');
+const MAX_Y=20, MAX_X=6;
+
+function startLoop(){
+  function loop(){
+    rafId=requestAnimationFrame(loop);
+
+    smX+=(mouseNX-smX)*0.08;
+    smY+=(mouseNY-smY)*0.08;
+
+    const vx=Math.abs(smX-prevSmX);
+    prevSmX=smX;
+
+    // Accumulate movement → auto blink
+    blinkAccum+=vx*90;
+    blinkAccum*=0.88;
+    if(++autoT>=AUTO_BLINK){ autoT=0; blinkAccum+=2; }
+    if(blinkAccum>=1 && bPhase===0) triggerBlink();
+
+    // Advance phases
+    if     (bPhase===1){ if(++bFrame>=BC){ bPhase=2; bFrame=0; } }
+    else if(bPhase===2){ if(++bFrame>=BH){ bPhase=3; bFrame=0; } }
+    else if(bPhase===3){ if(++bFrame>=BO){ bPhase=0; bFrame=0; } }
+
+    // Face rotation
+    const rotY=(smX-0.5)*MAX_Y*2;
+    const rotX=(smY-0.5)*MAX_X*-2;
+    const w=$wrap2();
+    if(w) w.style.transform=
+      `perspective(900px) rotateY(${rotY.toFixed(2)}deg) rotateX(${rotX.toFixed(2)}deg) scale3d(1.02,1.02,1)`;
+
+    // Direction
+    const off=smX-0.5;
+    if(off<-0.06){ $arrL.classList.add('on'); $arrR.classList.remove('on'); $dl.textContent='LEFT'; }
+    else if(off>0.06){ $arrR.classList.add('on'); $arrL.classList.remove('on'); $dl.textContent='RIGHT'; }
+    else{ $arrL.classList.remove('on'); $arrR.classList.remove('on'); $dl.textContent='STRAIGHT'; }
+
+    drawFrame();
+  }
+  loop();
+}
+
+// ══════════════════════════════════
+//  DRAW — blink lids + eye dot markers
+// ══════════════════════════════════
+function blinkT(){
+  if(bPhase===0) return 0;
+  if(bPhase===1) return bFrame/BC;
+  if(bPhase===2) return 1;
+  if(bPhase===3) return 1-bFrame/BO;
+  return 0;
+}
+
+function drawFrame(){
+  const cv=document.getElementById('eyeCanvas');
+  if(!cv||SW===0) return;
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,SW,SH);
+
+  const ep=getEP();
+  const t=blinkT();
+
+  // Draw eyelids
+  if(t>0.005){
+    drawLid(ctx, ep.lex*SW, ep.ley*SH, ep.ew*SW, ep.eh*SH, t);
+    drawLid(ctx, ep.rex*SW, ep.rey*SH, ep.ew*SW, ep.eh*SH, t);
+  }
+
+  // Draw marker dots (always visible when eye panel open)
+  if(document.getElementById('eyePanel').classList.contains('open')){
+    drawMarker(ctx, ep.lex*SW, ep.ley*SH, ep.ew*SW, ep.eh*SH, 'left');
+    drawMarker(ctx, ep.rex*SW, ep.rey*SH, ep.ew*SW, ep.eh*SH, 'right');
+  }
+}
+
+function drawLid(ctx, cx, cy, ew, eh, t){
+  const rx=ew/2, ry=eh/2;
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx*1.1, ry*1.15, 0, 0, Math.PI*2);
+  ctx.clip();
+
+  // Upper lid sweeps down
+  const topH=ry*2.4*t;
+  const g=ctx.createLinearGradient(cx, cy-ry-2, cx, cy+ry);
+  g.addColorStop(0,   `rgba(10,8,7,${0.97*t})`);
+  g.addColorStop(0.5, `rgba(18,13,11,${0.92*t})`);
+  g.addColorStop(1,   `rgba(10,8,7,${0.1*t})`);
+  ctx.fillStyle=g;
+  ctx.fillRect(cx-rx-1, cy-ry-2, ew+2, topH+2);
+
+  // Lash line
+  if(t>0.15){
+    ctx.fillStyle=`rgba(4,3,3,${Math.min(1,t*1.4)})`;
+    ctx.fillRect(cx-rx, cy-ry, ew, Math.max(1,2*t));
+  }
+
+  // Lower lid rises slightly
+  const botH=ry*0.5*t;
+  const g2=ctx.createLinearGradient(cx, cy+ry+1, cx, cy);
+  g2.addColorStop(0, `rgba(10,8,7,${0.85*t})`);
+  g2.addColorStop(1, `rgba(10,8,7,0)`);
+  ctx.fillStyle=g2;
+  ctx.fillRect(cx-rx-1, cy+ry+1-botH, ew+2, botH+1);
+
+  ctx.restore();
+}
+
+// Visual marker — shows exact eye ellipse + center crosshair
+function drawMarker(ctx, cx, cy, ew, eh, side){
+  const rx=ew/2, ry=eh/2;
+  const col=side==='left'?'rgba(0,212,255,0.9)':'rgba(0,255,204,0.9)';
+  const fill=side==='left'?'rgba(0,212,255,0.12)':'rgba(0,255,204,0.1)';
+
+  // Ellipse outline
+  ctx.save();
+  ctx.strokeStyle=col;
+  ctx.lineWidth=1.5;
+  ctx.setLineDash([4,3]);
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI*2);
+  ctx.fillStyle=fill;
+  ctx.fill();
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Center dot
+  ctx.fillStyle=col;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 3, 0, Math.PI*2);
+  ctx.fill();
+
+  // Cross hair lines
+  ctx.strokeStyle=col;
+  ctx.lineWidth=1;
+  ctx.globalAlpha=0.6;
+  ctx.beginPath();
+  ctx.moveTo(cx-rx-6, cy); ctx.lineTo(cx+rx+6, cy);
+  ctx.moveTo(cx, cy-ry-6); ctx.lineTo(cx, cy+ry+6);
+  ctx.stroke();
+  ctx.globalAlpha=1;
+
+  // Label
+  ctx.fillStyle=col;
+  ctx.font=`bold 10px Outfit,sans-serif`;
+  ctx.fillText(side==='left'?'L EYE':'R EYE', cx-rx, cy-ry-8);
+
+  ctx.restore();
+}
+
+// ══════════════════════════════════
+//  CLICK-TO-PLACE EYE POSITIONING
+// ══════════════════════════════════
+let placingMode=null; // null | 'left' | 'right'
+
+function startPlace(side){
+  placingMode=side;
+  const hint=document.getElementById('placeHint');
+  hint.textContent=side==='left'
+    ? '👆 Click exactly on the LEFT eye in the photo'
+    : '👆 Click exactly on the RIGHT eye in the photo';
+  hint.classList.add('show');
+  document.getElementById('btnPlaceL').classList.toggle('active', side==='left');
+  document.getElementById('btnPlaceR').classList.toggle('active', side==='right');
+}
+
+document.getElementById('eyeCanvas').addEventListener('click', e=>{
+  if(!placingMode || SW===0) return;
+
+  // Get click position relative to canvas
+  const rect=e.target.getBoundingClientRect();
+  const px=(e.clientX-rect.left);
+  const py=(e.clientY-rect.top);
+
+  // Convert to percentage of image
+  const pxPct=parseFloat((px/SW*100).toFixed(1));
+  const pyPct=parseFloat((py/SH*100).toFixed(1));
+
+  if(placingMode==='left'){
+    setSlider('lex', pxPct); setSlider('ley', pyPct);
+    // Auto-switch to right eye
+    startPlace('right');
+  } else {
+    setSlider('rex', pxPct); setSlider('rey', pyPct);
+    // Done
+    placingMode=null;
+    document.getElementById('placeHint').classList.remove('show');
+    document.getElementById('btnPlaceL').classList.remove('active');
+    document.getElementById('btnPlaceR').classList.remove('active');
+  }
+});
+
+function setSlider(key, val){
+  const el=document.getElementById('s_'+key);
+  // Clamp to slider min/max
+  const v=Math.max(+el.min, Math.min(+el.max, val));
+  el.value=v;
+  document.getElementById('v_'+key).textContent=v.toFixed(1);
+}
+
+// ══════════════════════════════════
+//  EYE PARAMS & SLIDERS
+// ══════════════════════════════════
+function getEP(){
+  return {
+    lex:+document.getElementById('s_lex').value/100,
+    ley:+document.getElementById('s_ley').value/100,
+    rex:+document.getElementById('s_rex').value/100,
+    rey:+document.getElementById('s_rey').value/100,
+    ew: +document.getElementById('s_ew').value/100,
+    eh: +document.getElementById('s_eh').value/100,
+  };
+}
+function slSync(key){
+  document.getElementById('v_'+key).textContent=
+    document.getElementById('s_'+key).value;
+}
+function toggleEyes(){
+  document.getElementById('eyePanel').classList.toggle('open');
+}
+</script>
+</body>
+</html>

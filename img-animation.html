@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Face Animator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #080b10;
+  --card: #0f1318;
+  --border: #1e2530;
+  --cyan: #00d4ff;
+  --cyan2: #00ffcc;
+  --text: #cdd6e0;
+  --muted: #3a4555;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  font-family: 'Outfit', sans-serif;
+  color: var(--text);
+  overflow: hidden;
+  cursor: none;
+}
+
+/* animated bg grid */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse 70% 70% at 50% 50%, rgba(0,212,255,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── CUSTOM CURSOR ── */
+#cursor {
+  position: fixed;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--cyan);
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%,-50%);
+  box-shadow: 0 0 12px var(--cyan), 0 0 24px rgba(0,212,255,0.4);
+  transition: width 0.15s, height 0.15s;
+}
+#cursorRing {
+  position: fixed;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,212,255,0.4);
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%,-50%);
+  transition: transform 0.12s ease, width 0.2s, height 0.2s;
+}
+
+/* ── UPLOAD SCREEN ── */
+#uploadScreen {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 32px; padding: 40px;
+  z-index: 100;
+}
+
+.logo {
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-align: center;
+}
+.logo span {
+  background: linear-gradient(120deg, var(--cyan), var(--cyan2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.tagline {
+  font-size: 0.8rem;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+
+.upload-box {
+  position: relative;
+  width: min(360px, 90vw);
+  height: 240px;
+  border-radius: 20px;
+  border: 1.5px dashed var(--border);
+  background: var(--card);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 14px;
+  cursor: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  overflow: hidden;
+}
+.upload-box::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, rgba(0,212,255,0.05) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.upload-box:hover { border-color: var(--cyan); box-shadow: 0 0 30px rgba(0,212,255,0.1); }
+.upload-box:hover::before { opacity: 1; }
+
+.upload-icon {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background: rgba(0,212,255,0.08);
+  border: 1px solid rgba(0,212,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+}
+.upload-box p { font-size: 0.82rem; color: var(--muted); text-align: center; line-height: 1.6; }
+.upload-box strong { color: var(--cyan); font-weight: 500; }
+
+.features {
+  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+}
+.feat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 7px 16px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  display: flex; align-items: center; gap: 7px;
+}
+.feat-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 6px var(--cyan);
+  flex-shrink: 0;
+}
+
+#fileInput { display: none; }
+
+/* ── ANIMATOR SCREEN ── */
+#animScreen {
+  position: fixed; inset: 0;
+  display: none;
+  align-items: center; justify-content: center;
+}
+
+/* ── FACE STAGE ── */
+#stage {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 0 60px rgba(0,0,0,0.8),
+    0 0 120px rgba(0,212,255,0.05);
+}
+
+/* The face image itself */
+#faceImg {
+  display: block;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  user-select: none;
+  pointer-events: none;
+  /* 3D perspective turn effect */
+  will-change: transform;
+  transform-style: preserve-3d;
+  transition: transform 0.06s linear;
+}
+
+/* Eye blink canvas on top */
+#blinkCanvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Direction indicator */
+#dirIndicator {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(8,11,16,0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 7px 18px;
+  z-index: 20;
+  pointer-events: none;
+}
+.dir-arrow {
+  font-size: 1rem;
+  transition: opacity 0.2s, color 0.2s;
+  opacity: 0.2;
+}
+.dir-arrow.active { opacity: 1; color: var(--cyan); filter: drop-shadow(0 0 4px var(--cyan)); }
+.dir-label {
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  min-width: 56px;
+  text-align: center;
+}
+
+/* Eye calibration toggle */
+#eyeToggle {
+  position: absolute;
+  top: 14px; right: 14px;
+  z-index: 30;
+  background: rgba(8,11,16,0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  padding: 7px 14px;
+  cursor: none;
+  transition: border-color 0.2s, color 0.2s;
+}
+#eyeToggle:hover { border-color: var(--cyan); color: var(--cyan); }
+
+/* Reset btn */
+#resetBtn {
+  position: absolute;
+  top: 14px; left: 14px;
+  z-index: 30;
+  background: rgba(8,11,16,0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  padding: 7px 14px;
+  cursor: none;
+  transition: border-color 0.2s, color 0.2s;
+}
+#resetBtn:hover { border-color: var(--cyan); color: var(--cyan); }
+
+/* Blink btn */
+#blinkBtn {
+  position: absolute;
+  top: 14px; left: 120px;
+  z-index: 30;
+  background: rgba(8,11,16,0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  padding: 7px 14px;
+  cursor: none;
+  transition: border-color 0.2s, color 0.2s;
+}
+#blinkBtn:hover { border-color: var(--cyan); color: var(--cyan); }
+
+/* ── EYE PANEL ── */
+#eyePanel {
+  position: absolute;
+  top: 50px; right: 14px;
+  z-index: 40;
+  background: rgba(8,11,16,0.95);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 18px;
+  width: 230px;
+  display: none;
+  backdrop-filter: blur(16px);
+}
+#eyePanel.open { display: block; }
+#eyePanel h4 {
+  font-size: 0.75rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--cyan); margin-bottom: 14px;
+}
+.ep-row {
+  display: grid; grid-template-columns: 1fr auto;
+  align-items: center; gap: 10px;
+  margin-bottom: 10px;
+  font-size: 0.67rem; color: var(--muted);
+  letter-spacing: 0.04em;
+}
+.ep-row input[type=range] { width: 100%; accent-color: var(--cyan); }
+.ep-v { color: var(--cyan2); font-size: 0.68rem; min-width: 28px; text-align: right; }
+
+/* perspective wrapper */
+#perspWrap {
+  width: 100%; height: 100%;
+  perspective: 800px;
+  position: absolute; inset: 0;
+}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursorRing"></div>
+
+<!-- ══════════ UPLOAD SCREEN ══════════ -->
+<div id="uploadScreen">
+  <div class="logo">FACE<br><span>ALIVE</span></div>
+  <p class="tagline">Upload · Animate · React</p>
+
+  <div class="upload-box" id="uploadBox">
+    <div class="upload-icon">🖼</div>
+    <p><strong>Click to upload your photo</strong><br>or drag & drop here<br><span style="font-size:0.72rem;opacity:0.6">Portrait face photo works best</span></p>
+  </div>
+  <input type="file" id="fileInput" accept="image/*">
+
+  <div class="features">
+    <div class="feat"><div class="feat-dot"></div>Mouse tracks face</div>
+    <div class="feat"><div class="feat-dot"></div>Left / Right / Straight</div>
+    <div class="feat"><div class="feat-dot"></div>Eyes blink live</div>
+  </div>
+</div>
+
+<!-- ══════════ ANIMATOR SCREEN ══════════ -->
+<div id="animScreen">
+  <div id="stage">
+    <div id="perspWrap">
+      <img id="faceImg" src="" alt="face">
+    </div>
+    <canvas id="blinkCanvas"></canvas>
+
+    <button id="resetBtn" onclick="resetApp()">← New Photo</button>
+    <button id="eyeToggle" onclick="toggleEyePanel()">👁 Eyes</button>
+    <button id="blinkBtn" onclick="triggerBlink()">👀 Blink</button>
+
+    <!-- direction indicator -->
+    <div id="dirIndicator">
+      <span class="dir-arrow" id="arrL">◀</span>
+      <span class="dir-label" id="dirLabel">STRAIGHT</span>
+      <span class="dir-arrow" id="arrR">▶</span>
+    </div>
+
+    <!-- eye panel -->
+    <div id="eyePanel">
+      <h4>Eye Position</h4>
+      <div class="ep-row"><span>Left Eye X%</span><span class="ep-v" id="v_lex">27</span></div>
+      <input type="range" min="5" max="48" value="27" id="s_lex" oninput="sv('s_lex','v_lex')">
+      <div class="ep-row"><span>Left Eye Y%</span><span class="ep-v" id="v_ley">37</span></div>
+      <input type="range" min="5" max="65" value="37" id="s_ley" oninput="sv('s_ley','v_ley')">
+      <div class="ep-row"><span>Right Eye X%</span><span class="ep-v" id="v_rex">73</span></div>
+      <input type="range" min="52" max="95" value="73" id="s_rex" oninput="sv('s_rex','v_rex')">
+      <div class="ep-row"><span>Right Eye Y%</span><span class="ep-v" id="v_rey">37</span></div>
+      <input type="range" min="5" max="65" value="37" id="s_rey" oninput="sv('s_rey','v_rey')">
+      <div class="ep-row"><span>Eye Width%</span><span class="ep-v" id="v_ew">16</span></div>
+      <input type="range" min="4" max="30" value="16" id="s_ew" oninput="sv('s_ew','v_ew')">
+      <div class="ep-row"><span>Eye Height%</span><span class="ep-v" id="v_eh">6</span></div>
+      <input type="range" min="1" max="14" value="6" id="s_eh" oninput="sv('s_eh','v_eh')">
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  CURSOR
+// ══════════════════════════════════════════
+const cur = document.getElementById('cursor');
+const curR = document.getElementById('cursorRing');
+let cx = -100, cy = -100, rx = -100, ry = -100;
+
+document.addEventListener('mousemove', e => { cx = e.clientX; cy = e.clientY; });
+
+(function cursorLoop() {
+  rx += (cx - rx) * 0.15;
+  ry += (cy - ry) * 0.15;
+  cur.style.left = cx + 'px';
+  cur.style.top  = cy + 'px';
+  curR.style.left = rx + 'px';
+  curR.style.top  = ry + 'px';
+  requestAnimationFrame(cursorLoop);
+})();
+
+// ══════════════════════════════════════════
+//  UPLOAD
+// ══════════════════════════════════════════
+const uploadBox = document.getElementById('uploadBox');
+const fileInput = document.getElementById('fileInput');
+
+uploadBox.addEventListener('click', () => fileInput.click());
+uploadBox.addEventListener('dragover', e => { e.preventDefault(); uploadBox.style.borderColor = 'var(--cyan)'; });
+uploadBox.addEventListener('dragleave', () => uploadBox.style.borderColor = '');
+uploadBox.addEventListener('drop', e => {
+  e.preventDefault(); uploadBox.style.borderColor = '';
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) handleFile(f);
+});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => initAnim(ev.target.result);
+  reader.readAsDataURL(file);
+}
+
+// ══════════════════════════════════════════
+//  INIT ANIMATOR
+// ══════════════════════════════════════════
+let stageW = 0, stageH = 0;
+let rafId = null;
+
+function initAnim(src) {
+  const tmp = new Image();
+  tmp.onload = () => {
+    // Fit to viewport
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const maxW = Math.min(vw * 0.85, 580);
+    const maxH = vh * 0.84;
+    const scale = Math.min(maxW / tmp.naturalWidth, maxH / tmp.naturalHeight);
+    stageW = Math.round(tmp.naturalWidth  * scale);
+    stageH = Math.round(tmp.naturalHeight * scale);
+
+    const stage = document.getElementById('stage');
+    stage.style.width  = stageW + 'px';
+    stage.style.height = stageH + 'px';
+
+    const faceImg = document.getElementById('faceImg');
+    faceImg.src = src;
+    faceImg.style.width  = stageW + 'px';
+    faceImg.style.height = stageH + 'px';
+
+    const canvas = document.getElementById('blinkCanvas');
+    canvas.width  = stageW;
+    canvas.height = stageH;
+
+    document.getElementById('uploadScreen').style.display = 'none';
+    document.getElementById('animScreen').style.display = 'flex';
+
+    if (rafId) cancelAnimationFrame(rafId);
+    startLoop();
+  };
+  tmp.src = src;
+}
+
+function resetApp() {
+  if (rafId) cancelAnimationFrame(rafId);
+  document.getElementById('animScreen').style.display = 'none';
+  document.getElementById('uploadScreen').style.display = 'flex';
+  document.getElementById('fileInput').value = '';
+  mouseNX = 0.5;
+}
+
+// ══════════════════════════════════════════
+//  MOUSE TRACKING
+// ══════════════════════════════════════════
+let mouseNX = 0.5; // 0=left edge, 0.5=center, 1=right edge
+let mouseNY = 0.5;
+
+document.addEventListener('mousemove', e => {
+  mouseNX = e.clientX / window.innerWidth;
+  mouseNY = e.clientY / window.innerHeight;
+});
+document.addEventListener('touchmove', e => {
+  mouseNX = e.touches[0].clientX / window.innerWidth;
+  mouseNY = e.touches[0].clientY / window.innerHeight;
+}, { passive: true });
+
+// ══════════════════════════════════════════
+//  ANIMATION LOOP
+// ══════════════════════════════════════════
+let smX = 0.5, smY = 0.5;  // smoothed mouse
+let prevSmX = 0.5;
+
+// Blink state machine
+// Phase: 0=open, 1=closing, 2=holding, 3=opening
+let bPhase = 0, bFrame = 0;
+const B_CLOSE = 7, B_HOLD = 3, B_OPEN = 8;
+let blinkAccum = 0;          // accumulates from movement
+let autoBlinkTimer = 0;      // periodic auto-blink counter
+const AUTO_BLINK_INTERVAL = 180; // frames (~3s at 60fps)
+
+// Max rotation degrees
+const MAX_ROT_Y = 22;   // horizontal face turn
+const MAX_ROT_X = 8;    // slight vertical nod
+
+function startLoop() {
+  function loop() {
+    rafId = requestAnimationFrame(loop);
+
+    // Smooth mouse
+    smX += (mouseNX - smX) * 0.07;
+    smY += (mouseNY - smY) * 0.07;
+
+    // Velocity
+    const vx = Math.abs(smX - prevSmX);
+    prevSmX = smX;
+
+    // Accumulate blink from movement
+    blinkAccum += vx * 80;
+
+    // Auto blink
+    autoBlinkTimer++;
+    if (autoBlinkTimer >= AUTO_BLINK_INTERVAL) {
+      autoBlinkTimer = 0;
+      blinkAccum += 1.5; // force a blink
+    }
+
+    // Trigger blink
+    if (blinkAccum >= 1 && bPhase === 0) {
+      bPhase = 1; bFrame = 0;
+      blinkAccum = 0;
+    }
+    blinkAccum *= 0.9;
+
+    // Advance blink phases
+    if (bPhase === 1) { bFrame++; if (bFrame >= B_CLOSE) { bPhase = 2; bFrame = 0; } }
+    else if (bPhase === 2) { bFrame++; if (bFrame >= B_HOLD)  { bPhase = 3; bFrame = 0; } }
+    else if (bPhase === 3) { bFrame++; if (bFrame >= B_OPEN)  { bPhase = 0; bFrame = 0; } }
+
+    // ── FACE ROTATION ──
+    // smX: 0=left → face turns left (negative rotY)
+    //       1=right → face turns right (positive rotY)
+    // Center (0.5) = straight
+    const rotY = (smX - 0.5) * MAX_ROT_Y * 2;   // -22 to +22
+    const rotX = (smY - 0.5) * MAX_ROT_X * -2;  // slight tilt up/down
+
+    document.getElementById('faceImg').style.transform =
+      `perspective(700px) rotateY(${rotY}deg) rotateX(${rotX}deg) scale(1.04)`;
+
+    // ── DIRECTION INDICATOR ──
+    const dead = 0.08; // deadzone
+    const off = smX - 0.5;
+    const arrL = document.getElementById('arrL');
+    const arrR = document.getElementById('arrR');
+    const lbl  = document.getElementById('dirLabel');
+    if (off < -dead) {
+      arrL.classList.add('active'); arrR.classList.remove('active');
+      lbl.textContent = 'LEFT';
+    } else if (off > dead) {
+      arrR.classList.add('active'); arrL.classList.remove('active');
+      lbl.textContent = 'RIGHT';
+    } else {
+      arrL.classList.remove('active'); arrR.classList.remove('active');
+      lbl.textContent = 'STRAIGHT';
+    }
+
+    // ── DRAW BLINK ──
+    drawBlink();
+  }
+  loop();
+}
+
+// ══════════════════════════════════════════
+//  BLINK DRAWING
+// ══════════════════════════════════════════
+function blinkT() {
+  if (bPhase === 0) return 0;
+  if (bPhase === 1) return bFrame / B_CLOSE;
+  if (bPhase === 2) return 1;
+  if (bPhase === 3) return 1 - bFrame / B_OPEN;
+  return 0;
+}
+
+function drawBlink() {
+  const canvas = document.getElementById('blinkCanvas');
+  if (!canvas || stageW === 0) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, stageW, stageH);
+
+  const t = blinkT();
+  if (t < 0.01) return;
+
+  const ep = getEP();
+
+  drawEye(ctx, ep.lex * stageW, ep.ley * stageH,
+          ep.ew * stageW, ep.eh * stageH, t);
+  drawEye(ctx, ep.rex * stageW, ep.rey * stageH,
+          ep.ew * stageW, ep.eh * stageH, t);
+}
+
+function drawEye(ctx, cx, cy, ew, eh, t) {
+  const rx = ew / 2, ry = eh / 2;
+
+  ctx.save();
+  // Clip to eye ellipse (slightly larger)
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx * 1.1, ry * 1.15, 0, 0, Math.PI * 2);
+  ctx.clip();
+
+  // Top eyelid sliding down
+  const lidH = ry * 2.2 * t;
+
+  // Main lid fill — dark skin-toned
+  const g = ctx.createLinearGradient(cx, cy - ry, cx, cy + ry * 0.5);
+  g.addColorStop(0,   `rgba(15,12,10, ${0.97 * t})`);
+  g.addColorStop(0.6, `rgba(25,18,14, ${0.9  * t})`);
+  g.addColorStop(1,   `rgba(15,12,10, ${0.2  * t})`);
+  ctx.fillStyle = g;
+  ctx.fillRect(cx - rx - 2, cy - ry - 1, ew + 4, lidH);
+
+  // Lash line at top
+  if (t > 0.2) {
+    ctx.fillStyle = `rgba(5,5,5,${Math.min(1, t * 1.3)})`;
+    ctx.fillRect(cx - rx, cy - ry, ew, Math.max(1, 2.5 * t));
+  }
+
+  // Bottom lid rising up (subtle)
+  const botH = ry * 0.6 * t;
+  const g2 = ctx.createLinearGradient(cx, cy + ry, cx, cy - ry * 0.2);
+  g2.addColorStop(0,   `rgba(15,12,10, ${0.9 * t})`);
+  g2.addColorStop(1,   `rgba(15,12,10, 0)`);
+  ctx.fillStyle = g2;
+  ctx.fillRect(cx - rx - 2, cy + ry - botH, ew + 4, botH + 1);
+
+  ctx.restore();
+}
+
+// ══════════════════════════════════════════
+//  EYE PANEL HELPERS
+// ══════════════════════════════════════════
+function getEP() {
+  return {
+    lex: +document.getElementById('s_lex').value / 100,
+    ley: +document.getElementById('s_ley').value / 100,
+    rex: +document.getElementById('s_rex').value / 100,
+    rey: +document.getElementById('s_rey').value / 100,
+    ew:  +document.getElementById('s_ew').value  / 100,
+    eh:  +document.getElementById('s_eh').value  / 100,
+  };
+}
+
+function sv(sid, vid) {
+  document.getElementById(vid).textContent = document.getElementById(sid).value;
+}
+
+function toggleEyePanel() {
+  document.getElementById('eyePanel').classList.toggle('open');
+}
+
+function triggerBlink() {
+  if (bPhase === 0) {
+    bPhase = 1;
+    bFrame = 0;
+    blinkAccum = 0;
+  }
+}
+</script>
+</body>
+</html>
