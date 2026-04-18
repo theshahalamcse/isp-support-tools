@@ -26,7 +26,6 @@ body{
   background:#eef2ff;
 }
 
-/* App container */
 .app{
   max-width:420px;
   margin:0 auto;
@@ -35,11 +34,9 @@ body{
   box-shadow:0 10px 30px rgba(0,0,0,.08);
 }
 
-/* Header */
 .app-header{
   position:sticky;
   top:0;
-  z-index:10;
   background:linear-gradient(135deg,#7C3AED,#2563EB);
   color:#fff;
   padding:14px;
@@ -47,31 +44,30 @@ body{
   font-weight:700;
 }
 
-/* Content */
 .main-wrap{
   padding:14px 14px 90px;
 }
 
-/* Cards */
 .radio-batch-label,
 .radio-guest-label,
-.info-card,
 .summary-inner{
   box-shadow:0 4px 12px rgba(0,0,0,.04);
 }
 
-/* Step */
-.step-label{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.step-num{width:30px;height:30px;border-radius:50%;background:#7C3AED;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.step-label{display:flex;gap:10px;margin-bottom:10px}
+.step-num{
+  width:30px;height:30px;
+  border-radius:50%;
+  background:#7C3AED;color:#fff;
+  display:flex;align-items:center;justify-content:center;
+}
 
-/* Batch card */
 .radio-batch-label{
   display:flex;
-  align-items:center;
   justify-content:space-between;
-  border:2px solid #e5e7eb;
-  border-radius:14px;
   padding:14px;
+  border:2px solid #ddd;
+  border-radius:12px;
   cursor:pointer;
 }
 
@@ -80,22 +76,12 @@ body{
   background:#F5F3FF;
 }
 
-.fee-badge{
-  background:#eee;
-  padding:4px 10px;
-  border-radius:20px;
-  font-size:12px;
-}
-
-/* Guest */
 .radio-guest-label{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  border:2px solid #e5e7eb;
   padding:12px;
+  border:2px solid #ddd;
   border-radius:12px;
   cursor:pointer;
+  margin-top:6px;
 }
 
 .radio-guest-label.checked{
@@ -103,7 +89,6 @@ body{
   background:#F5F3FF;
 }
 
-/* Counter */
 .counter-area{
   display:flex;
   justify-content:center;
@@ -113,7 +98,7 @@ body{
 }
 
 .cnt-btn{
-  width:48px;height:48px;
+  width:45px;height:45px;
   border:none;
   border-radius:50%;
   background:#7C3AED;
@@ -121,23 +106,17 @@ body{
   font-size:22px;
 }
 
-.cnt-num{
-  font-size:28px;
-  font-weight:700;
-}
+.cnt-num{font-size:26px;font-weight:700}
 
-/* Summary */
 .summary-inner{
-  background:#fff;
-  padding:14px;
-  border-radius:14px;
+  padding:12px;
+  border-radius:12px;
 }
 
 .s-row{
   display:flex;
   justify-content:space-between;
-  padding:6px 0;
-  font-size:14px;
+  padding:5px 0;
 }
 
 /* Bottom bar */
@@ -150,14 +129,14 @@ body{
   width:100%;
   background:#fff;
   border-top:1px solid #ddd;
-  padding:12px;
+  padding:10px;
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
 
-.pay-btn{
-  background:#7C3AED;
+.reset-btn{
+  background:#EF4444;
   color:#fff;
   border:none;
   padding:10px 16px;
@@ -182,20 +161,9 @@ body{
   <div>ব্যাচ নির্বাচন করুন</div>
 </div>
 
-<div onclick="selectBatch('1980-2000',1000,this)" class="radio-batch-label">
-  <span>১৯৮০–২০০০</span>
-  <span class="fee-badge">৳ 1000</span>
-</div>
-
-<div onclick="selectBatch('2001-2015',700,this)" class="radio-batch-label mt-2">
-  <span>২০০১–২০১৫</span>
-  <span class="fee-badge">৳ 700</span>
-</div>
-
-<div onclick="selectBatch('2016-2025',500,this)" class="radio-batch-label mt-2">
-  <span>২০১৬–২০২৫</span>
-  <span class="fee-badge">৳ 500</span>
-</div>
+<div onclick="selectBatch('1980-2000',1000,this)" class="radio-batch-label">১৯৮০–২০০০ <span>৳1000</span></div>
+<div onclick="selectBatch('2001-2015',700,this)" class="radio-batch-label mt-2">২০০১–২০১৫ <span>৳700</span></div>
+<div onclick="selectBatch('2016-2025',500,this)" class="radio-batch-label mt-2">২০১৬–২০২৫ <span>৳500</span></div>
 
 <!-- Step 2 -->
 <div id="guestSec" class="hidden mt-4">
@@ -205,7 +173,7 @@ body{
   </div>
 
   <div onclick="setGuest(true,this)" class="radio-guest-label">হ্যাঁ</div>
-  <div onclick="setGuest(false,this)" class="radio-guest-label mt-2">না</div>
+  <div onclick="setGuest(false,this)" class="radio-guest-label">না</div>
 
   <div id="guestCount" class="hidden">
     <div class="counter-area">
@@ -222,7 +190,6 @@ body{
     <div class="step-num">3</div>
     <div>সারসংক্ষেপ</div>
   </div>
-
   <div class="summary-inner" id="summary"></div>
 </div>
 
@@ -230,8 +197,11 @@ body{
 
 <!-- Bottom -->
 <div class="bottom-bar">
-  <div id="total">৳ 0</div>
-  <button class="pay-btn">Proceed</button>
+  <div>
+  <div style="font-size:12px;color:#6B7280">Total Fee</div>
+  <div id="total" style="font-weight:700;font-size:18px">৳ 0</div>
+</div>
+  <button class="reset-btn" onclick="resetAll()">Reset</button>
 </div>
 
 </div>
@@ -281,13 +251,24 @@ function render(){
   let guestFee=S.guest?S.count*GFEE:0;
   let total=S.fee+guestFee;
 
-  let html=`
+  document.getElementById('summary').innerHTML=`
     <div class="s-row"><span>ব্যাচ</span><span>${fmt(S.fee)}</span></div>
     <div class="s-row"><span>গেস্ট</span><span>${fmt(guestFee)}</span></div>
   `;
 
-  document.getElementById('summary').innerHTML=html;
   document.getElementById('total').innerText=fmt(total);
+}
+
+function resetAll(){
+  S={batch:null,fee:0,guest:false,count:1};
+
+  document.querySelectorAll('.checked').forEach(e=>e.classList.remove('checked'));
+
+  document.getElementById('guestSec').classList.add('hidden');
+  document.getElementById('guestCount').classList.add('hidden');
+  document.getElementById('summarySec').classList.add('hidden');
+
+  document.getElementById('total').innerText='৳ 0';
 }
 </script>
 
