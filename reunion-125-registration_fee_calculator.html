@@ -1,0 +1,285 @@
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.maateen.me/solaiman-lipi/font.css" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{font-family:'SolaimanLipi',sans-serif;background:transparent}
+.main-wrap{max-width:480px;margin:0 auto;padding:14px}
+
+.hero-card{background:linear-gradient(135deg,#7C3AED 0%,#2563EB 55%,#0891B2 100%);border-radius:20px;padding:24px 20px 20px;position:relative;overflow:hidden;margin-bottom:20px}
+.hero-card::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.1)}
+.hero-card::after{content:'';position:absolute;bottom:-25px;left:10px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.07)}
+.hero-badge{display:inline-block;background:rgba(255,255,255,.22);color:#fff;font-size:12px;font-weight:700;letter-spacing:.06em;padding:4px 14px;border-radius:30px;margin-bottom:10px}
+.hero-title{font-size:24px;font-weight:700;color:#fff;line-height:1.3;margin-bottom:5px;position:relative;z-index:1}
+.hero-sub{font-size:13px;color:rgba(255,255,255,.82);line-height:1.6;position:relative;z-index:1}
+
+.step-label{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.step-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;background:linear-gradient(135deg,#7C3AED,#2563EB)}
+.step-title{font-size:16px;font-weight:700;color:var(--color-text-primary)}
+
+/* Radio batch cards */
+.radio-batch-label{display:flex;align-items:center;gap:14px;background:var(--color-background-primary);border:2px solid var(--color-border-tertiary);border-radius:16px;padding:14px 16px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;width:100%}
+.radio-batch-label:active{transform:scale(.98)}
+.radio-batch-label .top-bar{position:absolute;top:0;left:0;right:0;height:4px;border-radius:16px 16px 0 0;opacity:0;transition:opacity .2s}
+
+input[type=radio]{display:none}
+
+/* Custom radio circle */
+.radio-circle{width:20px;height:20px;border-radius:50%;border:2px solid #D1D5DB;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;background:#fff}
+.radio-circle::after{content:'';width:10px;height:10px;border-radius:50%;background:#fff;opacity:0;transition:opacity .2s}
+
+.batch-info{flex:1}
+.batch-icon-sm{font-size:20px;line-height:1}
+.b-year{font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.2}
+.b-sub{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.fee-badge{font-size:12px;font-weight:700;padding:4px 12px;border-radius:30px;background:#F3F4F6;color:#6B7280;transition:all .2s;white-space:nowrap;flex-shrink:0}
+
+/* b1 active */
+input#r1:checked ~ * .radio-batch-label.b1,
+.radio-batch-label.b1.checked{border-color:#7C3AED;background:#F5F3FF}
+input#r1:checked ~ * .radio-batch-label.b1 .top-bar,
+.radio-batch-label.b1.checked .top-bar{opacity:1}
+.radio-batch-label.b1.checked .radio-circle{border-color:#7C3AED;background:#7C3AED}
+.radio-batch-label.b1.checked .radio-circle::after{opacity:1}
+.radio-batch-label.b1.checked .b-year{color:#5B21B6}
+.radio-batch-label.b1.checked .fee-badge{background:#7C3AED;color:#fff}
+.radio-batch-label.b1 .top-bar{background:linear-gradient(90deg,#7C3AED,#A855F7)}
+
+/* b2 active */
+.radio-batch-label.b2.checked{border-color:#0891B2;background:#ECFEFF}
+.radio-batch-label.b2.checked .top-bar{opacity:1}
+.radio-batch-label.b2.checked .radio-circle{border-color:#0891B2;background:#0891B2}
+.radio-batch-label.b2.checked .radio-circle::after{opacity:1}
+.radio-batch-label.b2.checked .b-year{color:#0E7490}
+.radio-batch-label.b2.checked .fee-badge{background:#0891B2;color:#fff}
+.radio-batch-label.b2 .top-bar{background:linear-gradient(90deg,#0891B2,#2563EB)}
+
+/* b3 active */
+.radio-batch-label.b3.checked{border-color:#EA580C;background:#FFF7ED}
+.radio-batch-label.b3.checked .top-bar{opacity:1}
+.radio-batch-label.b3.checked .radio-circle{border-color:#EA580C;background:#EA580C}
+.radio-batch-label.b3.checked .radio-circle::after{opacity:1}
+.radio-batch-label.b3.checked .b-year{color:#C2410C}
+.radio-batch-label.b3.checked .fee-badge{background:#EA580C;color:#fff}
+.radio-batch-label.b3 .top-bar{background:linear-gradient(90deg,#EA580C,#F59E0B)}
+
+/* Radio guest cards */
+.radio-guest-label{display:flex;align-items:center;gap:12px;background:var(--color-background-secondary);border:2px solid var(--color-border-tertiary);border-radius:12px;padding:12px 14px;cursor:pointer;transition:all .2s;width:100%}
+.radio-guest-label:active{transform:scale(.97)}
+.radio-guest-label.gy.checked{border-color:#7C3AED;background:#F5F3FF}
+.radio-guest-label.gy.checked .radio-circle{border-color:#7C3AED;background:#7C3AED}
+.radio-guest-label.gy.checked .radio-circle::after{opacity:1}
+.radio-guest-label.gy.checked .g-lbl{color:#5B21B6;font-weight:700}
+.radio-guest-label.gn.checked{border-color:#0891B2;background:#ECFEFF}
+.radio-guest-label.gn.checked .radio-circle{border-color:#0891B2;background:#0891B2}
+.radio-guest-label.gn.checked .radio-circle::after{opacity:1}
+.radio-guest-label.gn.checked .g-lbl{color:#0E7490;font-weight:700}
+.g-icon{font-size:18px;line-height:1}
+.g-lbl{font-size:14px;font-weight:500;color:var(--color-text-primary);transition:color .2s}
+
+.info-card{background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:18px;padding:18px}
+
+.counter-area{display:flex;align-items:center;justify-content:center;gap:18px;background:linear-gradient(135deg,#F5F3FF,#ECFEFF);border-radius:14px;padding:16px;margin:14px 0 10px}
+.cnt-btn{width:44px;height:44px;border-radius:50%;border:none;background:linear-gradient(135deg,#7C3AED,#2563EB);color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s}
+.cnt-btn:active{transform:scale(.88)}
+.cnt-num{font-size:32px;font-weight:700;color:#5B21B6;min-width:42px;text-align:center;line-height:1}
+.cnt-lbl{font-size:11px;color:#7C3AED;font-weight:600;text-align:center;margin-top:2px}
+.guest-note{font-size:12px;background:#FFFBEB;border:1px solid #FCD34D;border-radius:12px;padding:10px 14px;color:#92400E;line-height:1.7}
+
+.summary-wrap{border-radius:18px;background:linear-gradient(135deg,#7C3AED,#2563EB,#0891B2);padding:2px}
+.summary-inner{background:var(--color-background-primary);border-radius:16px;padding:18px}
+.s-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:.5px solid var(--color-border-tertiary);font-size:14px}
+.s-row:last-child{border-bottom:none}
+.s-lbl{color:var(--color-text-secondary);display:flex;align-items:center;gap:7px}
+.s-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0}
+.s-val{font-weight:700;color:var(--color-text-primary)}
+.total-box{background:linear-gradient(135deg,#7C3AED,#2563EB,#0891B2);border-radius:16px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+.total-lbl{font-size:14px;font-weight:700;color:rgba(255,255,255,.85)}
+.total-amt{font-size:28px;font-weight:700;color:#fff}
+
+.hidden{display:none!important}
+.fade-up{animation:fu .28s ease both}
+@keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+</style>
+
+<h2 class="visually-hidden">রেজিস্ট্রেশন ফি ক্যালকুলেটর</h2>
+<div class="main-wrap">
+
+  <div class="hero-card">
+    <div class="hero-badge">🎉 পুনর্মিলনী ২০২৫</div>
+    <div class="hero-title">রেজিস্ট্রেশন ফি<br>ক্যালকুলেটর</div>
+    <div class="hero-sub">ব্যাচ বেছে নিন, মোট ফি জানুন</div>
+  </div>
+
+  <div class="mb-4">
+    <div class="step-label">
+      <div class="step-num">১</div>
+      <div class="step-title">আপনার ব্যাচ নির্বাচন করুন</div>
+    </div>
+    <div class="d-flex flex-column gap-2">
+
+      <label class="radio-batch-label b1" id="lbl-b1" onclick="selectBatch('1980-2000',1000,'b1')">
+        <div class="top-bar"></div>
+        <div class="radio-circle" id="rc-b1"></div>
+        <div class="batch-info">
+          <div class="d-flex align-items-center gap-2">
+            <span class="batch-icon-sm">🎓</span>
+            <span class="b-year">ব্যাচ নং: ১৯৮০–২০০০</span>
+          </div>
+          <div class="b-sub">সিনিয়র ব্যাচ</div>
+        </div>
+        <span class="fee-badge" id="fb-b1">৳ ১,০০০/-</span>
+      </label>
+
+      <label class="radio-batch-label b2" id="lbl-b2" onclick="selectBatch('2001-2015',700,'b2')">
+        <div class="top-bar"></div>
+        <div class="radio-circle" id="rc-b2"></div>
+        <div class="batch-info">
+          <div class="d-flex align-items-center gap-2">
+            <span class="batch-icon-sm">📚</span>
+            <span class="b-year">ব্যাচ নং: ২০০১–২০১৫</span>
+          </div>
+          <div class="b-sub">মিড ব্যাচ</div>
+        </div>
+        <span class="fee-badge" id="fb-b2">৳ ৭০০/-</span>
+      </label>
+
+      <label class="radio-batch-label b3" id="lbl-b3" onclick="selectBatch('2016-2025',500,'b3')">
+        <div class="top-bar"></div>
+        <div class="radio-circle" id="rc-b3"></div>
+        <div class="batch-info">
+          <div class="d-flex align-items-center gap-2">
+            <span class="batch-icon-sm">✨</span>
+            <span class="b-year">ব্যাচ নং: ২০১৬–২০২৫</span>
+          </div>
+          <div class="b-sub">জুনিয়র ব্যাচ</div>
+        </div>
+        <span class="fee-badge" id="fb-b3">৳ ৫০০/-</span>
+      </label>
+
+    </div>
+  </div>
+
+  <div id="guest-sec" class="hidden mb-4 fade-up">
+    <div class="step-label">
+      <div class="step-num">২</div>
+      <div class="step-title">গেস্ট আছেন?</div>
+    </div>
+    <div class="info-card">
+      <div class="d-flex flex-column gap-2 mb-1">
+
+        <label class="radio-guest-label gy" id="lbl-gy" onclick="setGuest(true)">
+          <div class="radio-circle" id="rc-gy"></div>
+          <span class="g-icon">👥</span>
+          <span class="g-lbl">হ্যাঁ, গেস্ট আছেন</span>
+        </label>
+
+        <label class="radio-guest-label gn" id="lbl-gn" onclick="setGuest(false)">
+          <div class="radio-circle" id="rc-gn"></div>
+          <span class="g-icon">🙋</span>
+          <span class="g-lbl">না, গেস্ট নেই</span>
+        </label>
+
+      </div>
+      <div id="guest-count-sec" class="hidden fade-up">
+        <div class="counter-area">
+          <button class="cnt-btn" onclick="changeGuest(-1)">−</button>
+          <div class="text-center">
+            <div class="cnt-num" id="gnum">১</div>
+            <div class="cnt-lbl">জন গেস্ট</div>
+          </div>
+          <button class="cnt-btn" onclick="changeGuest(1)">+</button>
+        </div>
+        <div class="guest-note">💡 গেস্ট ফি: <strong>৳ ৫০০/-</strong> প্রতি জন — বিস্তারিত রেজিস্ট্রেশন ফরমে উল্লেখ আছে</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="summary-sec" class="hidden fade-up">
+    <div class="step-label">
+      <div class="step-num" style="background:linear-gradient(135deg,#F59E0B,#EA580C)">৩</div>
+      <div class="step-title">ফি সারসংক্ষেপ</div>
+    </div>
+    <div class="summary-wrap mb-3">
+      <div class="summary-inner">
+        <div id="srows"></div>
+      </div>
+    </div>
+    <div class="total-box">
+      <span class="total-lbl">মোট পরিশোধযোগ্য</span>
+      <span class="total-amt" id="total">৳ ০/-</span>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const GFEE=500;
+const bn=n=>n.toString().replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]);
+const fmt=n=>'৳ '+bn(Math.round(n).toLocaleString('en'))+'/-';
+const bmap={'1980-2000':'১৯৮০–২০০০','2001-2015':'২০০১–২০১৫','2016-2025':'২০১৬–২০২৫'};
+const dotcol={'1980-2000':'#7C3AED','2001-2015':'#0891B2','2016-2025':'#EA580C'};
+let S={batch:null,fee:0,cls:'',hasGuest:null,gc:1};
+
+function showEl(id){const e=document.getElementById(id);e.classList.remove('hidden');void e.offsetWidth;e.classList.add('fade-up')}
+
+function selectBatch(batch,fee,cls){
+  ['b1','b2','b3'].forEach(k=>{
+    document.getElementById('lbl-'+k).classList.remove('checked');
+    document.getElementById('rc-'+k).classList.remove('checked');
+  });
+  document.getElementById('lbl-'+cls).classList.add('checked');
+  document.getElementById('rc-'+cls).classList.add('checked');
+  S={...S,batch,fee,cls,hasGuest:null,gc:1};
+  showEl('guest-sec');
+  document.getElementById('guest-count-sec').classList.add('hidden');
+  document.getElementById('summary-sec').classList.add('hidden');
+  ['gy','gn'].forEach(k=>{
+    document.getElementById('lbl-'+k).classList.remove('checked');
+    document.getElementById('rc-'+k).classList.remove('checked');
+  });
+}
+
+function setGuest(has){
+  S.hasGuest=has; S.gc=has?1:0;
+  ['gy','gn'].forEach(k=>{
+    document.getElementById('lbl-'+k).classList.remove('checked');
+    document.getElementById('rc-'+k).classList.remove('checked');
+  });
+  const key=has?'gy':'gn';
+  document.getElementById('lbl-'+key).classList.add('checked');
+  document.getElementById('rc-'+key).classList.add('checked');
+  if(has){showEl('guest-count-sec');S.gc=1;document.getElementById('gnum').textContent=bn(1);}
+  else document.getElementById('guest-count-sec').classList.add('hidden');
+  showEl('summary-sec');render();
+}
+
+function changeGuest(d){
+  S.gc=Math.max(1,S.gc+d);
+  document.getElementById('gnum').textContent=bn(S.gc);render();
+}
+
+function render(){
+  const gt=S.hasGuest?S.gc*GFEE:0;
+  const total=S.fee+gt;
+  const dc=dotcol[S.batch]||'#7C3AED';
+  let rows=`<div class="s-row">
+    <span class="s-lbl"><span class="s-dot" style="background:${dc}"></span>ব্যাচ (${bmap[S.batch]})</span>
+    <span class="s-val">${fmt(S.fee)}</span>
+  </div>`;
+  if(S.hasGuest){
+    rows+=`<div class="s-row">
+      <span class="s-lbl"><span class="s-dot" style="background:#0891B2"></span>গেস্ট (${bn(S.gc)} জন × ৳ ৫০০/-)</span>
+      <span class="s-val">${fmt(gt)}</span>
+    </div>`;
+  } else {
+    rows+=`<div class="s-row">
+      <span class="s-lbl"><span class="s-dot" style="background:#9CA3AF"></span>গেস্ট</span>
+      <span class="s-val" style="color:var(--color-text-secondary)">নেই</span>
+    </div>`;
+  }
+  document.getElementById('srows').innerHTML=rows;
+  document.getElementById('total').textContent=fmt(total);
+}
+</script>
