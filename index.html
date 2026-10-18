@@ -1,246 +1,340 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Live Date Converter</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-	background-color: rgb(186, 223, 219);
-  }
-  h2 {
-    text-align: center;
-    margin-bottom: 15px;
-  }
-  .container {
-    display: flex;
-    gap: 20px;
-    width: 90%;
-    align-items: flex-start;
-  }
-  textarea {
-    width: 45%;
-    height: 300px;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 15px;
-    resize: none;
-  }
-  #inputText {
-    background: #fff7f0;
-  }
-  #outputBox {
-    display: flex;
-    width: 45%;
-    align-items: stretch;
-    gap: 8px;
-  }
-  #outputText {
-    background: #eaf7f1;
-    flex: 1;
-  }
-  #copyBtn {
-    padding: 6px 12px;
-    background: #5f7ea0;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    height: fit-content;
-    align-self: flex-start;
-  }
-  #copyBtn:hover {
-    background: #0056b3;
-  }
-  pre.invalid {
-    color: crimson;
-    background: #ffeaea;
-    padding: 10px;
-    border-radius: 6px;
-    width: 90%;
-    margin-top: 20px;
-    white-space: pre-wrap;
-  }
-</style>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Live Date Converter</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: rgb(186, 223, 219);
+      }
+      h2 {
+        text-align: center;
+        margin-bottom: 15px;
+      }
+      .container {
+        display: flex;
+        gap: 20px;
+        width: 90%;
+        align-items: flex-start;
+      }
+      textarea {
+        width: 45%;
+        height: 300px;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 15px;
+        resize: none;
+      }
+      #inputText {
+        background: #fff7f0;
+      }
+      #outputBox {
+        display: flex;
+        width: 45%;
+        align-items: stretch;
+        gap: 8px;
+      }
+      #outputText {
+        background: #eaf7f1;
+        flex: 1;
+      }
+      #copyBtn {
+        padding: 6px 12px;
+        background: #5f7ea0;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        height: fit-content;
+        align-self: flex-start;
+      }
+      #copyBtn:hover {
+        background: #0056b3;
+      }
+      pre.invalid {
+        color: crimson;
+        background: #ffeaea;
+        padding: 10px;
+        border-radius: 6px;
+        width: 90%;
+        margin-top: 20px;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>
+      <a
+        href="core-olt-onu-report.html"
+        style="text-decoration: none; color: inherit"
+      >
+        CORE LINK OLT-ONU REPORT
+      </a>
+    </h2>
 
-<h2>Live Date Converter (Paste Left → Converts Right)</h2>
-<div class="container">
-  <textarea id="inputText" placeholder="Paste your dates here (one per line)..."></textarea>
+    <h2>Live Date Converter (Paste Left → Converts Right)</h2>
+    <div class="container">
+      <textarea
+        id="inputText"
+        placeholder="Paste your dates here (one per line)..."
+      ></textarea>
 
-  <div id="outputBox">
-    <textarea id="outputText" placeholder="Converted results appear here..." readonly></textarea>
-    <button id="copyBtn">Copy</button>
-  </div>
-</div>
+      <div id="outputBox">
+        <textarea
+          id="outputText"
+          placeholder="Converted results appear here..."
+          readonly
+        ></textarea>
+        <button id="copyBtn">Copy</button>
+      </div>
+    </div>
 
-<pre id="invalid" class="invalid">(none)</pre>
-<h2>
-  <a href="replace.html" style="text-decoration:none; color:inherit;">
-    PON Name replacement with ponID Click this line
-  </a>
-</h2>
-<h2>
-  <a href="line-find-out-where-no-target-word.html" style="text-decoration:none; color:inherit;">
-    Live Line Filter — Show Lines Without Certain Words
-  </a>
-</h2>
-<h2>
-  <a href="line-cross-match.html" style="text-decoration:none; color:inherit;">
-    Live Line Cross Match — Show Only Matched Lines
-  </a>
-</h2>
-<h2>
-  <a href="mac-format.html" style="text-decoration:none; color:inherit;">
-   MAC  Formatter
-  </a>
-</h2>
-<h2>
-  <a href="Child-reseller-pacakage-rate.html" style="text-decoration:none; color:inherit;">
-   CHILD - RESELLER PACKAGE RATE CALCULATOR
-  </a>
-</h2>
-<h2>
-  <a href="random-line-generate.html" style="text-decoration:none; color:inherit;">
-   Random Line Generator
-  </a>
-</h2>
-<h2>
-  <a href="https://assets.ubuntu.com/v1/8f8ea0cf-18-04-serverguide.pdf" style="text-decoration:none; color:inherit;">
-   Ubuntu Server Guide 18.04 PDF
-  </a>
-</h2>
-<h2>
-  <a href="file/CCNA-PRE.pdf" style="text-decoration:none; color:inherit;">
-   CCNA PRE PDF
-  </a>
-</h2>
-<h2>
-  <a href="file/web_developer_syllabus_2026.pdf" style="text-decoration:none; color:inherit;">
-   Web Developer Syllabus 2026 PDF
-  </a>
-</h2>
-<h1>
- <a href="find-user-from-log.html" style="text-decoration:none; color:inherit;">
-   Authentication failed user  from MIKROTIK plain text log.
-  </a>
-</h1>
-<h1>
- <a href="maxim_excel_file_To_csv.html" style="text-decoration:none; color:inherit;">
-   Maxim Excel file To csv
-  </a>
-</h1>
-<h1>
- <a href="live-location-lat-long.html" style="text-decoration:none; color:inherit;">
-   Live Location - Lat/Long Note: Must enable on mobile browser and allow location access.
-  </a>
-</h1>
-<h1>
- <a href="Emergency_message_demo.html" style="text-decoration:none; color:inherit;">
-   Emergency Message Demo
-  </a>
-</h1>
-<p> ipv4 address extract regular expression: \b((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\b
-<script>
-const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const monthMap = {
-  "JANUARY":1,"JAN":1,
-  "FEBRUARY":2,"FEB":2,
-  "MARCH":3,"MAR":3,
-  "APRIL":4,"APR":4,
-  "MAY":5,
-  "JUNE":6,"JUN":6,
-  "JULY":7,"JUL":7,
-  "AUGUST":8,"AUG":8,
-  "SEPTEMBER":9,"SEPT":9,"SEP":9,
-  "OCTOBER":10,"OCT":10,
-  "NOVEMBER":11,"NOV":11,
-  "DECEMBER":12,"DEC":12
-};
+    <pre id="invalid" class="invalid">(none)</pre>
+    <h2>
+      <a href="replace.html" style="text-decoration: none; color: inherit">
+        PON Name replacement with ponID Click this line
+      </a>
+    </h2>
+    <h2>
+      <a
+        href="line-find-out-where-no-target-word.html"
+        style="text-decoration: none; color: inherit"
+      >
+        Live Line Filter — Show Lines Without Certain Words
+      </a>
+    </h2>
+    <h2>
+      <a
+        href="line-cross-match.html"
+        style="text-decoration: none; color: inherit"
+      >
+        Live Line Cross Match — Show Only Matched Lines
+      </a>
+    </h2>
+    <h2>
+      <a href="mac-format.html" style="text-decoration: none; color: inherit">
+        MAC Formatter
+      </a>
+    </h2>
+    <h2>
+      <a
+        href="Child-reseller-pacakage-rate.html"
+        style="text-decoration: none; color: inherit"
+      >
+        CHILD - RESELLER PACKAGE RATE CALCULATOR
+      </a>
+    </h2>
+    <h2>
+      <a
+        href="random-line-generate.html"
+        style="text-decoration: none; color: inherit"
+      >
+        Random Line Generator
+      </a>
+    </h2>
+    <h2>
+      <a
+        href="https://assets.ubuntu.com/v1/8f8ea0cf-18-04-serverguide.pdf"
+        style="text-decoration: none; color: inherit"
+      >
+        Ubuntu Server Guide 18.04 PDF
+      </a>
+    </h2>
+    <h2>
+      <a href="file/CCNA-PRE.pdf" style="text-decoration: none; color: inherit">
+        CCNA PRE PDF
+      </a>
+    </h2>
+    <h2>
+      <a
+        href="file/web_developer_syllabus_2026.pdf"
+        style="text-decoration: none; color: inherit"
+      >
+        Web Developer Syllabus 2026 PDF
+      </a>
+    </h2>
+    <h1>
+      <a
+        href="find-user-from-log.html"
+        style="text-decoration: none; color: inherit"
+      >
+        Authentication failed user from MIKROTIK plain text log.
+      </a>
+    </h1>
+    <h1>
+      <a
+        href="maxim_excel_file_To_csv.html"
+        style="text-decoration: none; color: inherit"
+      >
+        Maxim Excel file To csv
+      </a>
+    </h1>
+    <h1>
+      <a
+        href="live-location-lat-long.html"
+        style="text-decoration: none; color: inherit"
+      >
+        Live Location - Lat/Long Note: Must enable on mobile browser and allow
+        location access.
+      </a>
+    </h1>
+    <h1>
+      <a
+        href="Emergency_message_demo.html"
+        style="text-decoration: none; color: inherit"
+      >
+        Emergency Message Demo
+      </a>
+    </h1>
+    <p>
+      ipv4 address extract regular expression:
+      \b((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\b
+      <script>
+        const months = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ];
+        const monthMap = {
+          JANUARY: 1,
+          JAN: 1,
+          FEBRUARY: 2,
+          FEB: 2,
+          MARCH: 3,
+          MAR: 3,
+          APRIL: 4,
+          APR: 4,
+          MAY: 5,
+          JUNE: 6,
+          JUN: 6,
+          JULY: 7,
+          JUL: 7,
+          AUGUST: 8,
+          AUG: 8,
+          SEPTEMBER: 9,
+          SEPT: 9,
+          SEP: 9,
+          OCTOBER: 10,
+          OCT: 10,
+          NOVEMBER: 11,
+          NOV: 11,
+          DECEMBER: 12,
+          DEC: 12,
+        };
 
-function parseDateLine(line) {
-  if (!line) return null;
-  const s = line.trim();
+        function parseDateLine(line) {
+          if (!line) return null;
+          const s = line.trim();
 
-  // DD/MM/YY or DD-MM-YY
-  let m = s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/);
-  if (m) {
-    const dd = parseInt(m[1]), mm = parseInt(m[2]), yyyy = normalizeYear(m[3]);
-    if (!isValidDayMonth(dd, mm, yyyy)) return null;
-    return `${dd} ${months[mm-1]} ${yyyy}`;
-  }
+          // DD/MM/YY or DD-MM-YY
+          let m = s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/);
+          if (m) {
+            const dd = parseInt(m[1]),
+              mm = parseInt(m[2]),
+              yyyy = normalizeYear(m[3]);
+            if (!isValidDayMonth(dd, mm, yyyy)) return null;
+            return `${dd} ${months[mm - 1]} ${yyyy}`;
+          }
 
-  // YYYY-MM-DD
-  m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if (m) {
-    const yyyy = parseInt(m[1]), mm = parseInt(m[2]), dd = parseInt(m[3]);
-    if (!isValidDayMonth(dd, mm, yyyy)) return null;
-    return `${dd} ${months[mm-1]} ${yyyy}`;
-  }
+          // YYYY-MM-DD
+          m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+          if (m) {
+            const yyyy = parseInt(m[1]),
+              mm = parseInt(m[2]),
+              dd = parseInt(m[3]);
+            if (!isValidDayMonth(dd, mm, yyyy)) return null;
+            return `${dd} ${months[mm - 1]} ${yyyy}`;
+          }
 
-  // DD-MMM-YY / DD-MMM-YYYY / DD-MMMM-YY / DD-MMMM-YYYY
-  m = s.match(/^(\d{1,2})-([A-Za-z]{3,9})-(\d{2,4})$/);
-  if (m) {
-    const dd = parseInt(m[1]);
-    const monTxt = m[2].toUpperCase();
-    const mm = monthMap[monTxt];
-    if (!mm) return null;
-    const yyyy = normalizeYear(m[3]);
-    if (!isValidDayMonth(dd, mm, yyyy)) return null;
-    return `${dd} ${months[mm-1]} ${yyyy}`;
-  }
+          // DD-MMM-YY / DD-MMM-YYYY / DD-MMMM-YY / DD-MMMM-YYYY
+          m = s.match(/^(\d{1,2})-([A-Za-z]{3,9})-(\d{2,4})$/);
+          if (m) {
+            const dd = parseInt(m[1]);
+            const monTxt = m[2].toUpperCase();
+            const mm = monthMap[monTxt];
+            if (!mm) return null;
+            const yyyy = normalizeYear(m[3]);
+            if (!isValidDayMonth(dd, mm, yyyy)) return null;
+            return `${dd} ${months[mm - 1]} ${yyyy}`;
+          }
 
-  return null;
-}
+          return null;
+        }
 
-function normalizeYear(yStr) {
-  if (yStr.length === 2) {
-    const y = parseInt(yStr, 10);
-    return (y < 50 ? 2000 + y : 1900 + y);
-  }
-  return parseInt(yStr, 10);
-}
+        function normalizeYear(yStr) {
+          if (yStr.length === 2) {
+            const y = parseInt(yStr, 10);
+            return y < 50 ? 2000 + y : 1900 + y;
+          }
+          return parseInt(yStr, 10);
+        }
 
-function isValidDayMonth(dd, mm, yyyy) {
-  if (!(mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31)) return false;
-  const mdays = [31, (isLeap(yyyy) ? 29 : 28), 31,30,31,30,31,31,30,31,30,31];
-  return dd <= mdays[mm - 1];
-}
-function isLeap(y) { return (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0); }
+        function isValidDayMonth(dd, mm, yyyy) {
+          if (!(mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31)) return false;
+          const mdays = [
+            31,
+            isLeap(yyyy) ? 29 : 28,
+            31,
+            30,
+            31,
+            30,
+            31,
+            31,
+            30,
+            31,
+            30,
+            31,
+          ];
+          return dd <= mdays[mm - 1];
+        }
+        function isLeap(y) {
+          return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+        }
 
-document.getElementById("inputText").addEventListener("input", () => {
-  const input = document.getElementById("inputText").value;
-  const lines = input.split(/\r?\n/);
-  const converted = [];
-  const invalid = [];
+        document.getElementById("inputText").addEventListener("input", () => {
+          const input = document.getElementById("inputText").value;
+          const lines = input.split(/\r?\n/);
+          const converted = [];
+          const invalid = [];
 
-  lines.forEach(line => {
-    const result = parseDateLine(line);
-    if (result) converted.push(result);
-    else if (line.trim() !== "") invalid.push(line);
-  });
+          lines.forEach((line) => {
+            const result = parseDateLine(line);
+            if (result) converted.push(result);
+            else if (line.trim() !== "") invalid.push(line);
+          });
 
-  document.getElementById("outputText").value = converted.join("\n");
-  document.getElementById("invalid").textContent = invalid.length ? invalid.join("\n") : "(none)";
-});
+          document.getElementById("outputText").value = converted.join("\n");
+          document.getElementById("invalid").textContent = invalid.length
+            ? invalid.join("\n")
+            : "(none)";
+        });
 
-document.getElementById("copyBtn").addEventListener("click", () => {
-  const text = document.getElementById("outputText").value;
-  if (!text.trim()) {
-    alert("No converted text to copy!");
-    return;
-  }
-  navigator.clipboard.writeText(text).then(() => {
-    alert("Converted text copied to clipboard!");
-  });
-});
-</script>
-
-</body>
+        document.getElementById("copyBtn").addEventListener("click", () => {
+          const text = document.getElementById("outputText").value;
+          if (!text.trim()) {
+            alert("No converted text to copy!");
+            return;
+          }
+          navigator.clipboard.writeText(text).then(() => {
+            alert("Converted text copied to clipboard!");
+          });
+        });
+      </script>
+    </p>
+  </body>
 </html>

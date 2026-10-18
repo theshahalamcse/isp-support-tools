@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EPON ONU Report</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  body { background:#f4f6f9; }
+  .stat-card { border:0; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+  .bar-wrap { background:#e9ecef; border-radius:6px; height:14px; overflow:hidden; }
+  .bar-up { background:#198754; height:100%; float:left; }
+  .bar-down { background:#dc3545; height:100%; float:left; }
+  textarea { font-family: Consolas, Menlo, monospace; font-size: .8rem; white-space: pre; }
+</style>
+</head>
+<body>
+<div class="container py-4">
+  <h2 class="mb-1">EPON ONU Report</h2>
+  <p class="text-muted">Paste the CLI output (<code>show onu info all</code> for each PON) and the report is generated automatically.</p>
+
+  <div class="card stat-card mb-4">
+    <div class="card-body">
+      <label for="input" class="form-label fw-semibold">CLI Output</label>
+      <textarea id="input" class="form-control" rows="12" placeholder="Paste your OLT output here..."></textarea>
+      <div class="mt-3 d-flex flex-wrap gap-2 align-items-center">
+        <button class="btn btn-primary" id="btnGen">Generate Report</button>
+        <button class="btn btn-outline-secondary" id="btnClear">Clear</button>
+        <label class="btn btn-outline-secondary mb-0">
+          Load .txt file <input type="file" id="file" accept=".txt,.log,text/plain" hidden>
+        </label>
+        <span class="text-muted small ms-auto" id="parsedInfo"></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="report" style="display:none">
+    <div class="row g-3 mb-4" id="summary"></div>
+
+    <div class="card stat-card mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="card-title mb-0">Total ONU per PON</h5>
+          <button class="btn btn-sm btn-outline-primary" id="btnCopy">Copy as text</button>
+        </div>
+        <ul class="list-group list-group-flush" id="lines"></ul>
+      </div>
+    </div>
+
+    <div class="card stat-card">
+      <div class="card-body">
+        <h5 class="card-title">Detailed Table</h5>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+              <tr><th>PON</th><th>Port</th><th class="text-end">Total ONU</th><th class="text-end">Up</th><th class="text-end">Down</th><th style="width:25%">Status</th></tr>
+            </thead>
+            <tbody id="rows"></tbody>
+            <tfoot class="table-light fw-bold" id="foot"></tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-warning" id="empty" style="display:none">
+    No ONU lines found. Paste output that contains lines like <code>1/1:1 e4:c2:d1:12:e4:e3 Down ...</code>
+  </div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  let currentText = "";
+
+  function parse(text) {
+    const pons = new Map(); // key "slot/port" -> {slot, port, onus:Map(id -> status)}
+    const get = (slot, port) => {
+      const k = slot + "/" + port;
+      if (!pons.has(k)) pons.set(k, { slot: +slot, port: +port, onus: new Map() });
+      return pons.get(k);
+    };
+    const macs = new Set();
+
+    for (const raw of text.split(/\r?\n/)) {
+      const line = raw.trim();
+      // register PONs visited via "interface epon 1/5" (so empty PONs show as 0)
+      let m = line.match(/interface\s+epon\s+(\d+)\/(\d+)/i);
+      if (m) get(m[1], m[2]);
+
+      // ONU line: 1/2:5 f4:b8:c1:8d:f2:21 Up ...
+      m = line.match(/^(\d+)\/(\d+):(\d+)\s+([0-9a-f]{2}(?::[0-9a-f]{2}){5})\s+(Up|Down)\b/i);
+      if (m) {
+        const p = get(m[1], m[2]);
+        p.onus.set(+m[3], m[5].toLowerCase() === "up" ? "up" : "down"); // de-dupes repeated pastes
+        macs.add(m[4].toLowerCase());
+      }
+    }
+    const list = [...pons.values()].sort((a, b) => a.slot - b.slot || a.port - b.port);
+    return { list, uniqueMacs: macs.size };
+  }
+
+  function render() {
+    const text = $("input").value;
+    currentText = "";
+    const { list, uniqueMacs } = parse(text);
+    const totalOnu = list.reduce((a, p) => a + p.onus.size, 0);
+
+    if (!text.trim()) {
+      $("report").style.display = "none";
+      $("empty").style.display = "none";
+      $("parsedInfo").textContent = "";
+      return;
+    }
+    if (!list.length || (totalOnu === 0 && !list.some(p => true))) {
+      $("report").style.display = "none";
+      $("empty").style.display = "block";
+      return;
+    }
+    $("empty").style.display = "none";
+    $("report").style.display = "block";
+
+    const multiSlot = new Set(list.map(p => p.slot)).size > 1;
+    const rows = list.map(p => {
+      let up = 0, down = 0;
+      p.onus.forEach(s => s === "up" ? up++ : down++);
+      return {
+        name: multiSlot ? `pon${p.port} (slot ${p.slot})` : `pon${p.port}`,
+        port: `${p.slot}/${p.port}`, total: p.onus.size, up, down
+      };
+    });
+    const T = rows.reduce((a, r) => a + r.total, 0);
+    const U = rows.reduce((a, r) => a + r.up, 0);
+    const D = rows.reduce((a, r) => a + r.down, 0);
+
+    $("parsedInfo").textContent = `${rows.length} PON(s), ${T} ONU line(s), ${uniqueMacs} unique MAC(s)`;
+
+    $("summary").innerHTML = `
+      <div class="col-md-3"><div class="card stat-card text-bg-primary"><div class="card-body"><div>Total ONU</div><div class="display-6">${T}</div></div></div></div>
+      <div class="col-md-3"><div class="card stat-card text-bg-success"><div class="card-body"><div>Up</div><div class="display-6">${U}</div></div></div></div>
+      <div class="col-md-3"><div class="card stat-card text-bg-danger"><div class="card-body"><div>Down</div><div class="display-6">${D}</div></div></div></div>
+      <div class="col-md-3"><div class="card stat-card text-bg-secondary"><div class="card-body"><div>Unique MAC</div><div class="display-6">${uniqueMacs}</div></div></div></div>`;
+
+    $("lines").innerHTML = rows.map(r =>
+      `<li class="list-group-item d-flex justify-content-between"><span>${r.name} Total ONU:</span><strong>${r.total}</strong></li>`
+    ).join("");
+
+    $("rows").innerHTML = rows.map(r => {
+      const upW = r.total ? r.up / r.total * 100 : 0;
+      const dnW = r.total ? r.down / r.total * 100 : 0;
+      return `<tr>
+        <td class="fw-semibold">${r.name}</td><td>${r.port}</td>
+        <td class="text-end">${r.total}</td>
+        <td class="text-end text-success">${r.up}</td>
+        <td class="text-end text-danger">${r.down}</td>
+        <td><div class="bar-wrap"><div class="bar-up" style="width:${upW}%"></div><div class="bar-down" style="width:${dnW}%"></div></div></td>
+      </tr>`;
+    }).join("");
+
+    $("foot").innerHTML =
+      `<tr><td colspan="2">Grand Total</td><td class="text-end">${T}</td><td class="text-end">${U}</td><td class="text-end">${D}</td><td></td></tr>`;
+
+    currentText = rows.map(r => `${r.name} Total onu: ${r.total}`).join("\n") + `\nGrand total: ${T}`;
+  }
+
+  let timer;
+  $("input").addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(render, 300); });
+  $("btnGen").addEventListener("click", render);
+  $("btnClear").addEventListener("click", () => { $("input").value = ""; render(); });
+  $("file").addEventListener("change", e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => { $("input").value = r.result; render(); };
+    r.readAsText(f);
+  });
+  $("btnCopy").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(currentText); $("btnCopy").textContent = "Copied!"; }
+    catch { $("btnCopy").textContent = "Copy failed"; }
+    setTimeout(() => $("btnCopy").textContent = "Copy as text", 1500);
+  });
+</script>
+</body>
+</html>
